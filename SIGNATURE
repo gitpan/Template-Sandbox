@@ -14,18 +14,18 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 e136e8f3e56b964b11b9d3cf96d41d2f5530a69b Build.PL
+SHA1 8d3abecc701b4f793b4cc8aba5a23476528731e5 Build.PL
 SHA1 e1f70e2245190c805ca259c373eb4c39734eadf6 COPYING
-SHA1 c827dd5b5df89c5cba749ca58b50cc2970d9ff0d Changes
+SHA1 bc38e9d4da322f196740a4005a21ecbe6c828fb0 Changes
 SHA1 4ec1644ef8311292f3d4a877b99053767b252c77 MANIFEST
-SHA1 76746ee773ae719e75debe3a8cfaf51eefa6955b META.yml
+SHA1 13719ea4946ad0c2783b57aec63755b3a9f60903 META.yml
 SHA1 dcba619dd8874347a8f6a7f0b45a59dd1a617d2d Makefile.PL
 SHA1 5b7a1e1e33e1570106f6554ea36c6878bc235562 README
 SHA1 da39a3ee5e6b4b0d3255bfef95601890afd80709 TODO
-SHA1 2adad814da2035c7dd2b48a3351158a3533ab37f lib/Template/Sandbox.pm
-SHA1 756e2fe59d6f6a26b8c0d61c86566a3efad7d85b lib/Template/Sandbox/Library.pm
-SHA1 dfe4572013d6b4dc28821392e640112be6730b43 lib/Template/Sandbox/NumberFunctions.pm
-SHA1 bd2b56a48b9fcebc62f10c5d7292016d837d99a5 lib/Template/Sandbox/StringFunctions.pm
+SHA1 015b37111cebffeaee1619d9276be9908280e6a7 lib/Template/Sandbox.pm
+SHA1 ae309f8c7c0ee998dca500779b4b3f9ce29fa03e lib/Template/Sandbox/Library.pm
+SHA1 bd169b19b13ab85b336cda8ae8c35d06d761aac6 lib/Template/Sandbox/NumberFunctions.pm
+SHA1 59f140fa62527a5913148bce40991672d70f968f lib/Template/Sandbox/StringFunctions.pm
 SHA1 82d4eabedfe344636dc1023e4070d2f8b3680bca t/00-load.t
 SHA1 f5e793ad737ab7c7b5a59c4a868cc7e453fce3e9 t/05-export.t
 SHA1 e15ed9c71a99ccf6a27a0c49a03584735d6b1046 t/10-constructor.t
@@ -52,7 +52,7 @@ SHA1 9942190fbea8037fb422ef66e026c704f88d490a t/75-function-library.t
 SHA1 f857153b866e7f8cfed4c859087413d93c3ec30f t/76-string-functions.t
 SHA1 3968cefd2608286eab7a357bda8d3641d04a60ba t/77-number-functions.t
 SHA1 e3e947d9a63fb2b0c887c9b04637636b4f1d5f50 t/80-files.t
-SHA1 724a48f3f421a42c0dc5dbd4f71cb35f4ef3903d t/82-cache.t
+SHA1 37d9696d69a2eab0850b4b1b438b7d565c7d01cc t/82-cache.t
 SHA1 b0d704ce3c2af90887aaa1cd758a5c23a5609114 t/85-dump.t
 SHA1 032b7451e4e6f8bdd0170edc5223f0bd02e44de8 t/88-misc.t
 SHA1 640935336dc1123c0069bcf5432bcaedc2cf22d3 t/90-pod.t
@@ -80,7 +80,7 @@ SHA1 2f92661a5aa5b1bed509a05990dd4a8292852efd t/test_templates/unreadable_includ
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkqVKcoACgkQk0asf7iG0tQOTgCdFHpJc5uU2qLv8LeqYbVmaK3H
-zwYAniqFFcUWy4MWy8F4YvEE12IMhtVB
-=v7zX
+iEUEARECAAYFAkqWL98ACgkQk0asf7iG0tRUZgCgwwj4Dl0iz5X1RjQjP179K0TI
+lyEAkwSM+OmSRWg2+PQ39l11zZw05qw=
+=ir2Q
 -----END PGP SIGNATURE-----

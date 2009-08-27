@@ -12,7 +12,7 @@ my %function_tags    = ();
 
 BEGIN
 {
-    $Template::Sandbox::Library::VERSION = 1.00;
+    $Template::Sandbox::Library::VERSION = '1.01';
 }
 
 sub import
@@ -128,7 +128,7 @@ __END__
 
 =head1 NAME
 
-Template::Sandbox::Library - base library object for Template::Sandbox functions
+Template::Sandbox::Library - Base library object for Template::Sandbox functions.
 
 =head1 SYNOPSIS
 
