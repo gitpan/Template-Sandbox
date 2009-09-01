@@ -1,6 +1,6 @@
 ---
 name: Template-Sandbox
-version: 1.00_01
+version: 1.00_02
 author:
   - 'Sam Graham <libtemplate-sandbox-perl@illusori.co.uk>'
 abstract: Templates safely sandboxed from your application.
@@ -33,7 +33,7 @@ dynamic_config: 0
 provides:
   Template::Sandbox:
     file: lib/Template/Sandbox.pm
-    version: 1.00_01
+    version: 1.00_02
   Template::Sandbox::Library:
     file: lib/Template/Sandbox/Library.pm
     version: 1.01
