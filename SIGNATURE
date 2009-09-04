@@ -14,29 +14,29 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 8d3abecc701b4f793b4cc8aba5a23476528731e5 Build.PL
+SHA1 b41b77ab41de2294b10aa2ee004e0ad304d72737 Build.PL
 SHA1 e1f70e2245190c805ca259c373eb4c39734eadf6 COPYING
-SHA1 55d665a37e51e3806bbfcf3f4727a4bfbd940966 Changes
+SHA1 e96b2bac77b16794d0f6663ff8d07cca392e3df3 Changes
 SHA1 4ec1644ef8311292f3d4a877b99053767b252c77 MANIFEST
-SHA1 09e79d0aab656c66e78de550a356bea5d2bbae4e META.yml
+SHA1 0cbee160f9e663a6bb990598276997f355016fff META.yml
 SHA1 dcba619dd8874347a8f6a7f0b45a59dd1a617d2d Makefile.PL
 SHA1 5b7a1e1e33e1570106f6554ea36c6878bc235562 README
 SHA1 da39a3ee5e6b4b0d3255bfef95601890afd80709 TODO
-SHA1 ea4418835141032ce2f407c1acc1a85bde98c04b lib/Template/Sandbox.pm
+SHA1 fbd80eb113fbbca3b0366fc9daf99cccbe512f14 lib/Template/Sandbox.pm
 SHA1 857f814e10efecd7385dcb49e05e74fb458ce588 lib/Template/Sandbox/Library.pm
 SHA1 bd169b19b13ab85b336cda8ae8c35d06d761aac6 lib/Template/Sandbox/NumberFunctions.pm
 SHA1 59f140fa62527a5913148bce40991672d70f968f lib/Template/Sandbox/StringFunctions.pm
 SHA1 82d4eabedfe344636dc1023e4070d2f8b3680bca t/00-load.t
 SHA1 f5e793ad737ab7c7b5a59c4a868cc7e453fce3e9 t/05-export.t
-SHA1 7805023b321cc9405b00deda419766a5d658ac35 t/10-constructor.t
-SHA1 81e12459358791aae431134d3486f92aa623a010 t/11-diagnostics.t
-SHA1 a7be01c55da122155472da9a0f205ef6d047b915 t/12-vars.t
-SHA1 adc7cb30c2242d8a18888cbb70a74e08ce05ac89 t/20-compile-syntax.t
-SHA1 287fbf6a7c41c427c7b3653b768291241a800e9e t/21-compile-syntax-errors.t
+SHA1 493903c1333d0344b5a956bdae214dc9777ff91d t/10-constructor.t
+SHA1 9d50acfbb975ebf0c8c044bb748c1c66e4491936 t/11-diagnostics.t
+SHA1 89e2288d3c1d3083b634f44efb886c8f0dccd847 t/12-vars.t
+SHA1 cd052bb1b52c82370e1ee47d0f28c56a1fd43f6b t/20-compile-syntax.t
+SHA1 e7fe45e3cb79e8023c86992ac080b1bfa571e035 t/21-compile-syntax-errors.t
 SHA1 e9920c97c8f305d2c4e9ceb717cd45ea127cfc42 t/22-compile-defines.t
-SHA1 3564d15a07a67446c0c7a789a64f849b7b513861 t/26-compile-expr-errors.t
+SHA1 4b148bee44d651632daac3de28a1bacb04174276 t/26-compile-expr-errors.t
 SHA1 74a5231f84e73e8bed1e19a79cde739bcffe4394 t/30-runtime-expr-constant.t
-SHA1 c7ab70b8b315655379e565738bc25f260a55901c t/31-runtime-expr-var.t
+SHA1 6b4d4b35f2c9df04b512dee5eb92ca3b4a4d6b90 t/31-runtime-expr-var.t
 SHA1 ebf12bd3a53132513d00445a6d748de04a429fc2 t/32-runtime-constant-var.t
 SHA1 0ff518bd50390364e99d5ed849ef6e5ad91ec0cf t/40-runtime-if.t
 SHA1 3d784ffd04efc9bd734f63be1ad106c91121ae55 t/45-runtime-for.t
@@ -45,14 +45,14 @@ SHA1 711ba2e95009b8720211a3b53259a3bf0393a07b t/48-runtime-comment.t
 SHA1 b2451ae10df72b56eb262d083f0eee475cb232c9 t/50-runtime-expr-atomic.t
 SHA1 a89badeaec0244cc2b6e91845d4a2c409fc44336 t/51-runtime-expr-unary-op.t
 SHA1 c4d5b473531de593cbb443a09420f7c9524323da t/52-runtime-expr-operators.t
-SHA1 5259bf0fa43148e167917a2d638bcee9f68d72d9 t/55-runtime-expr-methods.t
-SHA1 290f79832fd50f2d30950e9fcaddd6378f9eb007 t/60-custom-syntax.t
-SHA1 ac0c257e0f54800187a54e4e7875f6e19751d0f9 t/70-custom-function.t
-SHA1 9942190fbea8037fb422ef66e026c704f88d490a t/75-function-library.t
-SHA1 f857153b866e7f8cfed4c859087413d93c3ec30f t/76-string-functions.t
-SHA1 3968cefd2608286eab7a357bda8d3641d04a60ba t/77-number-functions.t
-SHA1 e3e947d9a63fb2b0c887c9b04637636b4f1d5f50 t/80-files.t
-SHA1 37d9696d69a2eab0850b4b1b438b7d565c7d01cc t/82-cache.t
+SHA1 671ea8d65a2ae07f9d943b4bd87103424ff753f6 t/55-runtime-expr-methods.t
+SHA1 041ca456a0894c1e42c3640d4c02e747d833d6e4 t/60-custom-syntax.t
+SHA1 62ba22d19c3f0a53b06a70a28bd180845c1ebf31 t/70-custom-function.t
+SHA1 fefc9e987e503f89d4ff06f3db5ec12b2087bec7 t/75-function-library.t
+SHA1 1148a7a12f3a40d3dedcb054ceab51ea5f55dcbf t/76-string-functions.t
+SHA1 67a0678610caf9785b0829d45f78c2d7bf2b21d2 t/77-number-functions.t
+SHA1 3445518d5aa3f9e23bd42a96ded059d41194a809 t/80-files.t
+SHA1 91c87d6c86feb0ff51c71f30561109fd059b86f0 t/82-cache.t
 SHA1 b0d704ce3c2af90887aaa1cd758a5c23a5609114 t/85-dump.t
 SHA1 032b7451e4e6f8bdd0170edc5223f0bd02e44de8 t/88-misc.t
 SHA1 640935336dc1123c0069bcf5432bcaedc2cf22d3 t/90-pod.t
@@ -80,7 +80,7 @@ SHA1 2f92661a5aa5b1bed509a05990dd4a8292852efd t/test_templates/unreadable_includ
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkqc/ucACgkQk0asf7iG0tT+3ACbBkmKBHaTs7eCMahn8u1TAyfK
-GscAnRVnTY1QVyYqmy/6jQnFiF+4ZOBQ
-=sb3I
+iEYEARECAAYFAkqg9q8ACgkQk0asf7iG0tRSXACgy6M2eT1TVvjEuwmIZzaoersX
+PdQAn3eOPduC79E86KxGngdYyo6y40JW
+=Wd44
 -----END PGP SIGNATURE-----
