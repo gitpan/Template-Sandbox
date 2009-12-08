@@ -1,6 +1,6 @@
 ---
 name: Template-Sandbox
-version: 1.01_01
+version: 1.01_02
 author:
   - 'Sam Graham <libtemplate-sandbox-perl@illusori.co.uk>'
 abstract: Templates safely sandboxed from your application.
@@ -29,12 +29,12 @@ recommends:
   Cache::Cache: 1
   Cache::CacheFactory: 1.08
 configure_requires:
-  Module::Build: 0.34
+  Module::Build: 0.340201
 dynamic_config: 0
 provides:
   Template::Sandbox:
     file: lib/Template/Sandbox.pm
-    version: 1.01_01
+    version: 1.01_02
   Template::Sandbox::Library:
     file: lib/Template/Sandbox/Library.pm
     version: 1.01
@@ -44,7 +44,7 @@ provides:
   Template::Sandbox::StringFunctions:
     file: lib/Template/Sandbox/StringFunctions.pm
     version: 1.01
-generated_by: Module::Build version 0.34
+generated_by: Module::Build version 0.340201
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: 1.4

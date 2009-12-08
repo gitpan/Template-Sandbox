@@ -61,11 +61,11 @@ sub VAR()      { 104; }
 sub TEMPLATE() { 105; }
 
 #  Template function array indices.
-sub FUNC_FUNC()         { 0; }
-sub FUNC_ARG_NUM()      { 1; }
-sub FUNC_NEEDS_TEMPLATE { 2; }
-sub FUNC_INCONST()      { 3; }
-sub FUNC_UNDEF_OK()     { 4; }
+sub FUNC_FUNC()           { 0; }
+sub FUNC_ARG_NUM()        { 1; }
+sub FUNC_NEEDS_TEMPLATE() { 2; }
+sub FUNC_INCONST()        { 3; }
+sub FUNC_UNDEF_OK()       { 4; }
 
 #  The lower the weight the tighter it binds.
 my %operators = (
@@ -434,6 +434,7 @@ my $expr_regexp = qr/
 #                \:
 #                $atomic_expr_regexp
 #            )
+my $anchored_expr_regexp = qr/^$expr_regexp$/;
 
 my $capture_expr_op_remain_regexp = qr/
     ^
@@ -479,7 +480,7 @@ BEGIN
 {
     use Exporter   ();
 
-    $Template::Sandbox::VERSION     = '1.01_01';
+    $Template::Sandbox::VERSION     = '1.01_02';
     @Template::Sandbox::ISA         = qw( Exporter );
 
     @Template::Sandbox::EXPORT      = qw();
@@ -1451,7 +1452,8 @@ sub _compile_template
     my ( $self ) = @_;
     my ( $i, @hunks, @files, @pos_stack, @nest_stack, @compiled, %includes,
          %trim, $trim_next, %file_numbers, @define_stack,
-         $local_syntaxes, $local_token_aliases, $local_syntax_regexp );
+         $local_syntaxes, $local_token_aliases, $local_syntax_regexp,
+         $hunk_regexp );
 
     @files           = ( $self->{ filename } );
     %file_numbers    = ( $self->{ filename } => 0 );
@@ -1484,7 +1486,17 @@ sub _compile_template
             values( %{$syntaxes{ '.instr' }} ) ) );
     $local_syntax_regexp = ' | ' . $local_syntax_regexp
         if $local_syntax_regexp;
-#  TODO: qr// it?  need to benchmark
+    $hunk_regexp = qr/^<: \s*
+        (
+          var | expr |
+          (?:if|unless) | else? \s* (?:if|unless) | else |
+          end \s* (?:if|unless) |
+          for(?:each)? | end \s* for(?:each)? |
+          include | end \s* include |
+          \# |
+          debug
+          $local_syntax_regexp
+        ) \s+ (.*?) \s* :> (.+)? $/sx;
 
     @hunks = split( /(?=<:)/, $self->{ template }, -1 );
     delete $self->{ template };
@@ -1502,18 +1514,7 @@ sub _compile_template
         $pos = [ @{$pos_stack[ 0 ]}[ 0..2 ] ];
         $self->{ current_pos } = $pos;
 
-#  TODO: now that matching regexp is variable, unroll qr// of it outside loop.
-        if( $hunk =~ /^<: \s*
-            (
-              var | expr |
-              (?:if|unless) | else? \s* (?:if|unless) | else |
-              end \s* (?:if|unless) |
-              for(?:each)? | end \s* for(?:each)? |
-              include | end \s* include |
-              \# |
-              debug
-              $local_syntax_regexp
-            ) \s+ (.*?) \s* :> (.+)? $/sx )
+        if( $hunk =~ $hunk_regexp )
         {
             my ( $token, $syntax, $args, $rest );
 
@@ -1531,8 +1532,7 @@ sub _compile_template
             if( defined( $rest ) )
             {
                 $hunk =~ s/:>(?:.*)$/:>/s;
-                @hunks = ( @hunks[ 0..$i - 1 ], $hunk, $rest,
-                    @hunks[ $i + 1..$#hunks ] );
+                splice( @hunks, $i, 1, $hunk, $rest );
                 $next = $i + 1;
             }
 
@@ -1775,9 +1775,8 @@ sub _compile_template
                     @inc_hunks = split( /(?=<:)/, $inc_template, -1 );
                     $inc_template = 0;
 
-                    @hunks = ( @hunks[ 0..$i ], @inc_hunks,
-                        '<: endinclude :>',
-                        @hunks[ $i + 1..$#hunks ] );
+                    splice( @hunks, $i + 1, 0,
+                        @inc_hunks, '<: endinclude :>' );
 
                     push @compiled,
                         [ CONTEXT_PUSH, $pos, $args ];
@@ -1833,7 +1832,9 @@ sub _compile_template
 
         #  Update pos.
         #  TODO: adjust for any trimmage.
-        $lines = $#{ [ $hunk =~ /(\n)/g ] } + 1;
+#        $lines = () = $hunk =~ /\n/g;
+        $lines = $hunk =~ tr/\n//;
+#        $lines = $#{ [ $hunk =~ /\n/g ] } + 1;
         $pos_stack[ 0 ][ 1 ] += $lines;
         if( $lines )
         {
@@ -1866,11 +1867,16 @@ sub _compile_template
     }
 
     #  We're done.
-    $self->{ template } = $self->_optimize_template(
-        {
+    $self->{ template } = {
             program => [ @compiled ],
             files   => [ @files ],
-        } );
+        };
+    $self->{ template } = $self->_optimize_template( $self->{ template } );
+#    $self->{ template } = $self->_optimize_template(
+#        {
+#            program => [ @compiled ],
+#            files   => [ @files ],
+#        } );
     delete $self->{ current_pos };
     delete $self->{ pos_stack };
     delete $self->{ files };
@@ -1891,7 +1897,8 @@ sub _compile_template
 sub _optimize_template
 {
     my ( $self, $template ) = @_;
-    my ( $program, @nest_stack, %deletes, @function_table, %function_index );
+    my ( $program, @nest_stack, %deletes, @function_table, %function_index,
+         %jump_targets );
 
     #  Optimization pass:
     #    TODO: unroll constant low-count fors?
@@ -1901,8 +1908,6 @@ sub _optimize_template
     #  Void-wrap assign expressions.
     for( my $i = 0; $i <= $#{$program}; $i++ )
     {
-        my ( $expr );
-
         #  Are we an EXPR instr and is our expr an OP_TREE expr and op '='?
         next unless $program->[ $i ]->[ 0 ] == EXPR and
                     $program->[ $i ]->[ 2 ]->[ 0 ] == OP_TREE and
@@ -1952,7 +1957,7 @@ sub _optimize_template
             $deletes{ $i } = 1;
         }
     }
-    $self->_delete_instr( $program, keys( %deletes ) );
+    $self->_delete_instr( $program, keys( %deletes ) ) if %deletes;
 
 
     #  Trim empty context pushes (TODO: that have no assigns in top level)
@@ -1975,29 +1980,33 @@ sub _optimize_template
             next;
         }
     }
-    $self->_delete_instr( $program, keys( %deletes ) );
+    $self->_delete_instr( $program, keys( %deletes ) ) if %deletes;
+
 
     #  Now scan for adjacent literals to merge where the second
     #  isn't a jump target.
     %deletes = ();
-    OUTER: for( my $i = $#{$program}; $i > 0; $i-- )
+
+    #  For speed, prebuild a list of all jump targets.
+    %jump_targets = ();
+    foreach my $line ( @{$program} )
+    {
+        next unless $line->[ 0 ] == JUMP or
+                    $line->[ 0 ] == JUMP_IF or
+                    $line->[ 0 ] == FOR or
+                    $line->[ 0 ] == END_FOR;
+        $jump_targets{ $line->[ 2 ] } = 1;
+    }
+
+    #  Now scan for adjacent literals.
+    for( my $i = $#{$program}; $i > 0; $i-- )
     {
         #  Are both ourself and our previous instr a literal?
         next if $program->[ $i ]->[ 0 ]     != LITERAL or
                 $program->[ $i - 1 ]->[ 0 ] != LITERAL;
 
         #  Do any jumps lead to the second literal?
-        for( my $j = 0; $j <= $#{$program}; $j++ )
-        {
-            my ( $j_instr );
-
-            $j_instr = $program->[ $j ]->[ 0 ];
-            next unless $j_instr == JUMP or
-                        $j_instr == JUMP_IF or
-                        $j_instr == FOR or
-                        $j_instr == END_FOR;
-            next OUTER if $program->[ $j ]->[ 2 ] == $i;
-        }
+        next if $jump_targets{ $i };
 
 #warn "Merging literal $i to previous.";
 #warn "Merging literals [" . $program->[ $i - 1 ]->[ 2 ] . "] and [" . $program->[ $i ]->[ 2 ] . "]";
@@ -2007,7 +2016,7 @@ sub _optimize_template
         $deletes{ $i } = 1;
     }
 #warn "Literal merges: " . scalar( keys( %deletes ) );
-    $self->_delete_instr( $program, keys( %deletes ) );
+    $self->_delete_instr( $program, keys( %deletes ) ) if %deletes;
 
     #  TODO: look for loops that make no use of special loop vars.
 
@@ -2084,28 +2093,53 @@ sub _optimize_template
 sub _delete_instr
 {
     my ( $self, $program, @addrs ) = @_;
-    my ( $renumber );
+    my ( %renumbers );
 
-#warn "Deleting instr $addr: " . Data::Dumper::Dumper( $program->[ $addr ] );
+#warn "** Deleting instr: " . join( ', ', @addrs ) . ".";
+#warn "-- Pre:\n" . $self->dumpable_template();
 
     #  Delete all the stuff we've marked for deletion.
-    foreach my $addr ( sort { $b <=> $a } @addrs )
-    {
-        $renumber = $#{$program} + 1;
-        while( --$renumber >= 0 )
-        {
-            if( $program->[ $renumber ]->[ 0 ] == JUMP    or
-                $program->[ $renumber ]->[ 0 ] == JUMP_IF or
-                $program->[ $renumber ]->[ 0 ] == FOR     or
-                $program->[ $renumber ]->[ 0 ] == END_FOR )
-            {
-                $program->[ $renumber ]->[ 2 ]--
-                    if $program->[ $renumber ]->[ 2 ] > $addr;
-            }
-        }
 
+    #  First we need to sort the deletes.
+    @addrs = sort { $a <=> $b } @addrs;
+
+    #  Then we delete the instructions from last to first.
+    #  (To avoid renumbering issues).
+    foreach my $addr ( reverse( @addrs ) )
+    {
         splice( @{$program}, $addr, 1 );
     }
+
+#warn "-- Deleted:\n" . $self->dumpable_template();
+
+    #  Now we need to renumber any jump and loop targets affected.
+    %renumbers = ();
+    foreach my $line ( @{$program} )
+    {
+        next unless $line->[ 0 ] == JUMP    or
+                    $line->[ 0 ] == JUMP_IF or
+                    $line->[ 0 ] == FOR     or
+                    $line->[ 0 ] == END_FOR;
+
+        if( exists( $renumbers{ $line->[ 2 ] } ) )
+        {
+            $line->[ 2 ] = $renumbers{ $line->[ 2 ] };
+            next;
+        }
+
+        my $offset = 0;
+        foreach my $addr ( @addrs )
+        {
+            last if $addr >= $line->[ 2 ];
+            $offset++;
+        }
+
+        #  Cache the result, if-elsif-else will have lots of the same targets.
+        $renumbers{ $line->[ 2 ] } = $line->[ 2 ] - $offset;
+        $line->[ 2 ] = $line->[ 2 ] - $offset;
+    }
+
+#warn "-- Renumbered:\n" . $self->dumpable_template();
 }
 
 sub _compile_expression
@@ -2117,21 +2151,18 @@ sub _compile_expression
     $expression =~ s/\s+$//;
 
 #$self->error( "expression = '$expression', expr_regexp = $expr_regexp" )
-#  unless $expression =~ /^$expr_regexp$/;
+#  unless $expression =~ $anchored_expr_regexp;
 
     $self->error( "Not a well-formed expression: $expression" )
-        unless $expression =~ /^$expr_regexp$/;
+        unless $expression =~ $anchored_expr_regexp;
 
     while( $expression =~ $capture_expr_op_remain_regexp )
     {
-        my ( $lhs, $op, $rhs );
-
-        $lhs = $1;
-        $op  = $2;
-        $rhs = $3;
-
-        push @top_level, $lhs, $op;
-        $expression = $rhs;
+        # $lhs = $1;
+        # $op  = $2;
+        # $rhs = $3;
+        push @top_level, $1, $2;
+        $expression = $3;
     }
 
     return( $self->_build_op_tree( [ @top_level, $expression ] ) )
