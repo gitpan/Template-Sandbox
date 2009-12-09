@@ -16,20 +16,20 @@ Hash: SHA1
 
 SHA1 b41b77ab41de2294b10aa2ee004e0ad304d72737 Build.PL
 SHA1 e1f70e2245190c805ca259c373eb4c39734eadf6 COPYING
-SHA1 ed5e0f0594dbdefbea03d1a5bd05818ce112f285 Changes
+SHA1 e3ed70731df34ee730c88ed0321351a087d5745b Changes
 SHA1 4ec1644ef8311292f3d4a877b99053767b252c77 MANIFEST
-SHA1 6a13801cda4fec3876128017934f5bd9c019db6c META.yml
+SHA1 c36866e961c1b71fe425679c26b4078d499011dd META.yml
 SHA1 777f809e64b3b927a8e3a8400d51f9ba040a13e4 Makefile.PL
 SHA1 5b7a1e1e33e1570106f6554ea36c6878bc235562 README
 SHA1 da39a3ee5e6b4b0d3255bfef95601890afd80709 TODO
-SHA1 2f223887ae11fc516d2feffef7bb2885a63d467d lib/Template/Sandbox.pm
+SHA1 00427c1deedbded5c264eb1400ab8b3c93b81e62 lib/Template/Sandbox.pm
 SHA1 857f814e10efecd7385dcb49e05e74fb458ce588 lib/Template/Sandbox/Library.pm
 SHA1 bd169b19b13ab85b336cda8ae8c35d06d761aac6 lib/Template/Sandbox/NumberFunctions.pm
 SHA1 59f140fa62527a5913148bce40991672d70f968f lib/Template/Sandbox/StringFunctions.pm
 SHA1 82d4eabedfe344636dc1023e4070d2f8b3680bca t/00-load.t
 SHA1 f5e793ad737ab7c7b5a59c4a868cc7e453fce3e9 t/05-export.t
-SHA1 493903c1333d0344b5a956bdae214dc9777ff91d t/10-constructor.t
-SHA1 9d50acfbb975ebf0c8c044bb748c1c66e4491936 t/11-diagnostics.t
+SHA1 d219f7185ad10131e35a6d7b7b0a781890b98e2c t/10-constructor.t
+SHA1 51adc7ab676bfb8baeb7eb7330b72fc5b072dda6 t/11-diagnostics.t
 SHA1 89e2288d3c1d3083b634f44efb886c8f0dccd847 t/12-vars.t
 SHA1 cd052bb1b52c82370e1ee47d0f28c56a1fd43f6b t/20-compile-syntax.t
 SHA1 e7fe45e3cb79e8023c86992ac080b1bfa571e035 t/21-compile-syntax-errors.t
@@ -46,13 +46,13 @@ SHA1 b2451ae10df72b56eb262d083f0eee475cb232c9 t/50-runtime-expr-atomic.t
 SHA1 a89badeaec0244cc2b6e91845d4a2c409fc44336 t/51-runtime-expr-unary-op.t
 SHA1 c4d5b473531de593cbb443a09420f7c9524323da t/52-runtime-expr-operators.t
 SHA1 671ea8d65a2ae07f9d943b4bd87103424ff753f6 t/55-runtime-expr-methods.t
-SHA1 041ca456a0894c1e42c3640d4c02e747d833d6e4 t/60-custom-syntax.t
-SHA1 62ba22d19c3f0a53b06a70a28bd180845c1ebf31 t/70-custom-function.t
+SHA1 047c050404bf67cd30fc3bb36ef58818eab7730f t/60-custom-syntax.t
+SHA1 3d22bc3897853241622f25e8e96039ade289ec0f t/70-custom-function.t
 SHA1 fefc9e987e503f89d4ff06f3db5ec12b2087bec7 t/75-function-library.t
 SHA1 1148a7a12f3a40d3dedcb054ceab51ea5f55dcbf t/76-string-functions.t
 SHA1 67a0678610caf9785b0829d45f78c2d7bf2b21d2 t/77-number-functions.t
-SHA1 b5195a46bf19423ef402cc992c9d6c4cf4efedcf t/80-files.t
-SHA1 91c87d6c86feb0ff51c71f30561109fd059b86f0 t/82-cache.t
+SHA1 7da91679b68f19b8e039b9a324533e4d31de05bb t/80-files.t
+SHA1 0e7b3fdfb461a4f2f30756e69b425e29bc145ce9 t/82-cache.t
 SHA1 b0d704ce3c2af90887aaa1cd758a5c23a5609114 t/85-dump.t
 SHA1 032b7451e4e6f8bdd0170edc5223f0bd02e44de8 t/88-misc.t
 SHA1 640935336dc1123c0069bcf5432bcaedc2cf22d3 t/90-pod.t
@@ -80,7 +80,7 @@ SHA1 2f92661a5aa5b1bed509a05990dd4a8292852efd t/test_templates/unreadable_includ
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAkseSX4ACgkQk0asf7iG0tQEiwCgxwLtkKY/IueUBpV/04p5hanA
-nYgAn1RQjlaDjrZlxJywzCEdXwT92+bp
-=fcuT
+iEYEARECAAYFAksgIsoACgkQk0asf7iG0tSZygCgh1WMtwLD5Vf1KQ7WZuhcAoRj
+28IAn1S8pzBjoVh4XJCBx8kLEKQlzQcL
+=5t15
 -----END PGP SIGNATURE-----
