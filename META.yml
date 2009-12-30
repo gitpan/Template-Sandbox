@@ -20,7 +20,7 @@ name: Template-Sandbox
 provides:
   Template::Sandbox:
     file: lib/Template/Sandbox.pm
-    version: 1.01_04
+    version: 1.01_05
   Template::Sandbox::Library:
     file: lib/Template/Sandbox/Library.pm
     version: 1.01
@@ -46,4 +46,4 @@ requires:
   Storable: 1.014
 resources:
   license: http://dev.perl.org/licenses/
-version: 1.01_04
+version: 1.01_05
