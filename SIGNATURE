@@ -14,15 +14,15 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 b41b77ab41de2294b10aa2ee004e0ad304d72737 Build.PL
+SHA1 97d2c6dd0d967a8903b051e527ac0ef4dd934dfb Build.PL
 SHA1 e1f70e2245190c805ca259c373eb4c39734eadf6 COPYING
-SHA1 e3ed70731df34ee730c88ed0321351a087d5745b Changes
-SHA1 4ec1644ef8311292f3d4a877b99053767b252c77 MANIFEST
-SHA1 c36866e961c1b71fe425679c26b4078d499011dd META.yml
-SHA1 777f809e64b3b927a8e3a8400d51f9ba040a13e4 Makefile.PL
+SHA1 cbc6810a86525c2f58fa520fa65daca9ee541baf Changes
+SHA1 ea79f7f52b920aacc382a9b8fb128f790ade4f37 MANIFEST
+SHA1 22dd59efa909deca6455ff047c7774d0ec8f9932 META.yml
+SHA1 9fd0cc4f1b081f2ad0c273d17ae2f9945b63df38 Makefile.PL
 SHA1 5b7a1e1e33e1570106f6554ea36c6878bc235562 README
 SHA1 da39a3ee5e6b4b0d3255bfef95601890afd80709 TODO
-SHA1 00427c1deedbded5c264eb1400ab8b3c93b81e62 lib/Template/Sandbox.pm
+SHA1 d793c7a247b3aa654d5c4ef39283e19818a80862 lib/Template/Sandbox.pm
 SHA1 857f814e10efecd7385dcb49e05e74fb458ce588 lib/Template/Sandbox/Library.pm
 SHA1 bd169b19b13ab85b336cda8ae8c35d06d761aac6 lib/Template/Sandbox/NumberFunctions.pm
 SHA1 59f140fa62527a5913148bce40991672d70f968f lib/Template/Sandbox/StringFunctions.pm
@@ -39,7 +39,7 @@ SHA1 74a5231f84e73e8bed1e19a79cde739bcffe4394 t/30-runtime-expr-constant.t
 SHA1 6b4d4b35f2c9df04b512dee5eb92ca3b4a4d6b90 t/31-runtime-expr-var.t
 SHA1 ebf12bd3a53132513d00445a6d748de04a429fc2 t/32-runtime-constant-var.t
 SHA1 0ff518bd50390364e99d5ed849ef6e5ad91ec0cf t/40-runtime-if.t
-SHA1 3d784ffd04efc9bd734f63be1ad106c91121ae55 t/45-runtime-for.t
+SHA1 38a581f0a1ef354914203b7c992ad31640fcf5be t/45-runtime-for.t
 SHA1 b98f36b14e28fdf81ca5c4d745f37f8eed429400 t/47-runtime-zero-width.t
 SHA1 711ba2e95009b8720211a3b53259a3bf0393a07b t/48-runtime-comment.t
 SHA1 b2451ae10df72b56eb262d083f0eee475cb232c9 t/50-runtime-expr-atomic.t
@@ -51,9 +51,9 @@ SHA1 3d22bc3897853241622f25e8e96039ade289ec0f t/70-custom-function.t
 SHA1 fefc9e987e503f89d4ff06f3db5ec12b2087bec7 t/75-function-library.t
 SHA1 1148a7a12f3a40d3dedcb054ceab51ea5f55dcbf t/76-string-functions.t
 SHA1 67a0678610caf9785b0829d45f78c2d7bf2b21d2 t/77-number-functions.t
-SHA1 7da91679b68f19b8e039b9a324533e4d31de05bb t/80-files.t
+SHA1 27a5b12852afd1f0564fe534b4bb1503b7f5a1f3 t/80-files.t
 SHA1 0e7b3fdfb461a4f2f30756e69b425e29bc145ce9 t/82-cache.t
-SHA1 b0d704ce3c2af90887aaa1cd758a5c23a5609114 t/85-dump.t
+SHA1 efbbe4c74e8bf8b4575a2655070217a24dc437f7 t/85-dump.t
 SHA1 032b7451e4e6f8bdd0170edc5223f0bd02e44de8 t/88-misc.t
 SHA1 640935336dc1123c0069bcf5432bcaedc2cf22d3 t/90-pod.t
 SHA1 28f4bc4b60453739559694421acdd0aa03b2c9f1 t/99-pod-coverage.t
@@ -63,6 +63,12 @@ SHA1 ec76153a510087d1f3c2bbf3e59c70bb1c73dc75 t/test_templates/bad_include_param
 SHA1 e284ebe4eeb0c46597d3a592f740b9eb8d6531aa t/test_templates/cache.txt
 SHA1 4930ebb339097c06f0692d23393cdd00f9e0fd3a t/test_templates/defines.txt
 SHA1 a4f27e8ecc06c6864f5d488c3899897ba641591d t/test_templates/empty_string_include.txt
+SHA1 1b7506ba3118410417a7326d421f93f0b333cc18 t/test_templates/for_include_plain.txt
+SHA1 37d527509bd709142b0a35738adba5d40eb06f8c t/test_templates/for_include_plain_included.txt
+SHA1 83bb92e34d3087600ba1f11a2d6d10c75b881484 t/test_templates/for_include_special_vars.txt
+SHA1 b673e3a713cbce1737804419ea88c23ce030eaeb t/test_templates/for_include_special_vars_context.txt
+SHA1 96a564bf84506cff3c577fea6eca8469a3fa9f6a t/test_templates/for_include_special_vars_context_included.txt
+SHA1 d9c029313028df0e863747a449082233090f65f1 t/test_templates/for_include_special_vars_included.txt
 SHA1 13c61e2ac16551e6a2d1412207503114bd774fbb t/test_templates/if_a_blue_else_red_endif.txt
 SHA1 219a670d852a0cf9e59f02a124e27095710bbb4c t/test_templates/included_defines.txt
 SHA1 ae9f91281975583d9b72fa5a4fdb8f96a31f4778 t/test_templates/included_outer_defines.txt
@@ -80,7 +86,7 @@ SHA1 2f92661a5aa5b1bed509a05990dd4a8292852efd t/test_templates/unreadable_includ
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAksgIsoACgkQk0asf7iG0tSZygCgh1WMtwLD5Vf1KQ7WZuhcAoRj
-28IAn1S8pzBjoVh4XJCBx8kLEKQlzQcL
-=5t15
+iEYEARECAAYFAks6/u0ACgkQk0asf7iG0tTZjACgs8rmA4WmPNa5m3CvqIkMB6B0
+HKQAn1ytQHjoKJxK/N0N/GhGXlh0kWmi
+=PaeQ
 -----END PGP SIGNATURE-----

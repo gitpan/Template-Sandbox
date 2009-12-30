@@ -46,6 +46,12 @@ t/test_templates/bad_include_param.txt
 t/test_templates/cache.txt
 t/test_templates/defines.txt
 t/test_templates/empty_string_include.txt
+t/test_templates/for_include_plain.txt
+t/test_templates/for_include_plain_included.txt
+t/test_templates/for_include_special_vars.txt
+t/test_templates/for_include_special_vars_context.txt
+t/test_templates/for_include_special_vars_context_included.txt
+t/test_templates/for_include_special_vars_included.txt
 t/test_templates/if_a_blue_else_red_endif.txt
 t/test_templates/included_defines.txt
 t/test_templates/included_outer_defines.txt
