@@ -17,7 +17,7 @@ use Carp;
 use Class::Handle;
 use Clone;
 use Data::Dumper;
-use Digest;
+use Digest::MD5;
 use IO::File;
 use Log::Any;
 use Scalar::Util;
@@ -90,10 +90,11 @@ my %special_values_names = (
     );
 
 sub LOOP_STACK_COUNTER()  { 0; }
-sub LOOP_STACK_SET()      { 1; }
-sub LOOP_STACK_HASH()     { 2; }
-sub LOOP_STACK_CONTEXT()  { 3; }
-sub LOOP_STACK_SPECIALS() { 4; }
+sub LOOP_STACK_LAST()     { 1; }
+sub LOOP_STACK_SET()      { 2; }
+sub LOOP_STACK_HASH()     { 3; }
+sub LOOP_STACK_CONTEXT()  { 4; }
+sub LOOP_STACK_SPECIALS() { 5; }
 
 #  The lower the weight the tighter it binds.
 my %operators = (
@@ -232,9 +233,7 @@ my %syntaxes = (
         zero_width => 1,
         },
     'for'     => {
-        positional_args => [ 'iterator', 'set' ],
-        valid_args      => [ 'iterator', 'set' ],
-        zero_width      => 1,
+        zero_width => 1,
         },
     'endfor'      => {
         zero_width => 1,
@@ -262,6 +261,13 @@ my %syntaxes = (
         },
     );
 
+#  Special vars that are symbolic literals.
+my %symbolic_literals = (
+    'undef' => [ LITERAL, 'undef', undef ],
+    'null'  => [ LITERAL, 'null',  undef ],
+    'cr'    => [ LITERAL, 'cr', "\n" ],
+    );
+
 our ( $single_quoted_text_regexp );
 
 $single_quoted_text_regexp = qr/
@@ -274,7 +280,7 @@ $single_quoted_text_regexp = qr/
         (?> (?:\\\\)* \\ . )
     )*
     \'
-    /sx;
+    /sxo;
 
 our ( $double_quoted_text_regexp );
 
@@ -288,7 +294,7 @@ $double_quoted_text_regexp = qr/
         (?> (?:\\\\)* \\ . )
     )*
     \"
-    /sx;
+    /sxo;
 
 our ( $matching_square_brackets_regexp );
 
@@ -306,7 +312,7 @@ $matching_square_brackets_regexp = qr/
         (??{ $matching_square_brackets_regexp })
     )*
     \]
-    /sx;
+    /sxo;
 
 our ( $matching_round_brackets_regexp );
 
@@ -324,7 +330,7 @@ $matching_round_brackets_regexp = qr/
         (??{ $matching_round_brackets_regexp })
     )*
     \)
-    /sx;
+    /sxo;
 
 my $variable_segment_regexp = qr/
     #  avariable or a_varable or avariable[ expr ]
@@ -336,7 +342,7 @@ my $capture_variable_segment_regexp = qr/
     ([a-zA-Z_][a-zA-Z0-9_]*)
     ($matching_square_brackets_regexp)?
     $
-    /sx;
+    /sxo;
 
 my $variable_regexp = qr/
     #  variablesegment.variablesegment.variablesegment etc.
@@ -345,23 +351,31 @@ my $variable_regexp = qr/
         \.
         $variable_segment_regexp
     )*
-    /sx;
+    /sxo;
 my $capture_variable_regexp = qr/
     ^
     #  variablesegment.variablesegment.variablesegment etc.
     ($variable_segment_regexp)
-    ((?:
-        \.
-        $variable_segment_regexp
-    )*)
+    #  we don't care at this point what the rest of the crud is.
+    (.*)
     $
-    /sx;
+    /sxo;
+#my $capture_variable_regexp = qr/
+#    ^
+#    #  variablesegment.variablesegment.variablesegment etc.
+#    ($variable_segment_regexp)
+#    ((?:
+#        \.
+#        $variable_segment_regexp
+#    )*)
+#    $
+#    /sxo;
 
 my $function_regexp = qr/
     #  abc( expr )
     [a-zA-Z_]+
     $matching_round_brackets_regexp
-    /sx;
+    /sxo;
 
 my $capture_function_regexp = qr/
     ^
@@ -369,7 +383,7 @@ my $capture_function_regexp = qr/
     ([a-zA-Z_]+)
     ($matching_round_brackets_regexp)
     $
-    /sx;
+    /sxo;
 
 my $method_regexp = qr/
     #  variable.method( expr )
@@ -377,7 +391,7 @@ my $method_regexp = qr/
     $variable_regexp
     (?: \-\> | \. )
     $function_regexp
-    /sx;
+    /sxo;
 
 my $capture_method_regexp = qr/
     ^
@@ -389,18 +403,18 @@ my $capture_method_regexp = qr/
     ([a-zA-Z_]+)
     ($matching_round_brackets_regexp)
     $
-    /sx;
+    /sxo;
 
 my $literal_number_regexp = qr/
     #  1 or more digits.
     \d+
     #  Optionally a decimal fraction.
     (?: \. \d+ )?
-    /sx;
+    /sxo;
 
 my $unary_operator_regexp = qr/
     (?: \! | not (?=\s) | - )
-    /sx;
+    /sxo;
 
 my $atomic_expr_regexp = qr/
     #  Optionally a unary operator
@@ -425,12 +439,12 @@ my $atomic_expr_regexp = qr/
         #  A literal string
         $single_quoted_text_regexp
     )
-    /sx;
+    /sxo;
 
 my $operator_regexp = join( '|', map { "\Q$_\E" } keys( %operators ) );
 $operator_regexp = qr/
     (?: $operator_regexp )
-    /sx;
+    /sxo;
 
 my $expr_regexp = qr/
     \s*
@@ -445,7 +459,7 @@ my $expr_regexp = qr/
         )*
     )
     \s*
-    /sx;
+    /sxo;
 #            (?:
 #                \s+
 #                $operator_regexp
@@ -462,7 +476,7 @@ my $expr_regexp = qr/
 #                \:
 #                $atomic_expr_regexp
 #            )
-my $anchored_expr_regexp = qr/^$expr_regexp$/;
+my $anchored_expr_regexp = qr/^$expr_regexp$/o;
 
 my $capture_expr_op_remain_regexp = qr/
     ^
@@ -471,10 +485,20 @@ my $capture_expr_op_remain_regexp = qr/
     \s+
     ($operator_regexp)
     \s+
-    (.*?)
-    \s*
+    (.*)
     $
-    /sx;
+    /sxo;
+#my $capture_expr_op_remain_regexp = qr/
+#    ^
+#    \s*
+#    ($atomic_expr_regexp)
+#    \s+
+#    ($operator_regexp)
+#    \s+
+#    (.*?)
+#    \s*
+#    $
+#    /sxo;
 
 #my $capture_expr_if_else_remain_regexp = qr/
 #    ^
@@ -492,23 +516,20 @@ my $capture_expr_op_remain_regexp = qr/
 
 my $capture_expr_comma_remain_regexp = qr/
     ^
-    \s*
     ($expr_regexp)
-    \s*
     (?:
         (?: , | => )
         \s*
-        (.*?)
+        (.*)
     )?
-    \s*
     $
-    /sx;
+    /sxo;
 
 BEGIN
 {
     use Exporter   ();
 
-    $Template::Sandbox::VERSION     = '1.01_06';
+    $Template::Sandbox::VERSION     = '1.01_07';
     @Template::Sandbox::ISA         = qw( Exporter );
 
     @Template::Sandbox::EXPORT      = qw();
@@ -902,21 +923,14 @@ sub find_include
 sub cache_key
 {
     my ( $self, $keys ) = @_;
-    my ( $digester );
+    local $Storable::canonical = 1;
 
-    $digester = Digest->new( 'MD5' );
-
-    {
-        local $Storable::canonical = 1;
-        $digester->add( Storable::nfreeze( $keys ) );
-    }
-
-    return( $digester->hexdigest() );
+    return( Digest::MD5::md5_hex( Storable::nfreeze( $keys ) ) );
 }
 
 sub get_additional_dependencies
 {
-    my ( $self ) = @_;
+#    my ( $self ) = @_;
 
     return( [] );
 }
@@ -1308,10 +1322,10 @@ sub _escape_string
 
 sub _define_value
 {
-    my ( $self, $defines, $define, $default, $quote ) = @_;
+    my ( $self, $defines, $define, $default, $quote, $pos ) = @_;
     my ( $value );
 
-#$self->warning( "replacing define '$define'" );
+#$self->warning( "replacing define '$define', default '$default', quote is $quote, pos '$pos'" );
     if( $self->{ seen_defines }->{ $define }++ )
     {
         $value = "[recursive define '$define']";
@@ -1334,6 +1348,29 @@ sub _define_value
 
     $value = "'" . $self->_escape_string( $value ) . "'" if $quote;
 
+    if( defined( $pos ) )
+    {
+        my ( $lines, $definelen, $valuelen );
+
+        $lines     = $value =~ tr/\n//;
+        $definelen = 3 + ( $quote ? 2 : 0 ) + length( $define ) +
+            ( defined( $default ) ? length( $default ) : 0 );
+        $valuelen  = length( $value );
+
+        if( $lines )
+        {
+            push @{$self->{ offsets }}, [ $pos, $valuelen, -$lines,
+                $definelen - $valuelen,
+                ]
+        }
+        else
+        {
+            push @{$self->{ offsets }}, [ $pos, $valuelen, 0,
+                $definelen - $valuelen,
+                ]
+        }
+    }
+
     return( $value );
 }
 
@@ -1346,11 +1383,37 @@ sub _replace_defines
     unless( $self->{ seen_defines } )
     {
         $self->{ seen_defines } = {};
+        $self->{ offsets } = [];
         $top = 1;
     }
     1 while $template_content =~ s/\$\{('?)([A-Z0-9_]+)(?::([^\}]*))?\1\}/
-        $self->_define_value( $defines, $2, $3, $1 )/gex;
-    delete $self->{ seen_defines } if $top;
+        $self->_define_value( $defines, $2, $3, $1,
+            $top ? pos( $template_content ) : undef )/gex;
+    if( $top )
+    {
+        delete $self->{ seen_defines };
+        delete $self->{ offsets } if $#{$self->{ offsets }} == -1;
+        if( $self->{ offsets } )
+        {
+            #  pos() gives us position in original string, we need to
+            #  renumber to be position in replaced string.
+            my $carry = 0;
+            foreach my $offset ( @{$self->{ offsets }} )
+            {
+                $offset->[ 0 ] -= $carry;
+                $carry += $offset->[ 3 ];
+            }
+#my $t = $template_content;
+#foreach my $offset ( reverse( @{$self->{ offsets }} ) )
+#{
+#    substr( $t, $offset->[ 0 ] + $offset->[ 1 ], 0 ) = "XXX";
+#    substr( $t, $offset->[ 0 ], 0 ) = "XXX";
+#}
+#print "Replaced template:\n$t\n";
+#use Data::Dumper;
+#print "Using offsets: " . Data::Dumper::Dumper( $self->{ offsets } ) . "\n";
+        }
+    }
 
     return( $template_content );
 }
@@ -1393,15 +1456,17 @@ sub _read_template_from_string
 
 #  Looks for combination of positional and named parameters to a syntax
 #  token and returns a hashref of named parameters.
+#  TODO: this is largely obsolete for everything except includes,
+#  TODO: should be retired in favour of something specialized and faster.
 sub _parse_args
 {
     my ( $self, $args, $type ) = @_;
     my ( $count, %param, @words, @pos_param, @keyword_param, $instr,
          @positions, @valid, $syntax );
 
-    #  Heeeello hackery.
-    $args = "iterator=\"$1\" set=\"$2\""
-        if $type eq 'for' and $args =~ /^(.*) in (.*)$/;
+#    #  Heeeello hackery.
+#    $args = "iterator=\"$1\" set=\"$2\""
+#        if $type eq 'for' and $args =~ /^(.*) in (.*)$/o;
 
     $syntax = $self->{ local_syntaxes }->{ $type } || $syntaxes{ $type };
 
@@ -1488,7 +1553,10 @@ sub _compile_template
     $self->{ files } = \@files;
     
     #  Stack of what position in which file we're currently at.
-    @pos_stack    = ( [ $file_numbers{ $self->{ filename } }, 1, 1 ] );
+    @pos_stack    = ( [
+        $file_numbers{ $self->{ filename } }, 1, 1, 0, $self->{ offsets },
+        ] );
+    delete $self->{ offsets };
     #  Stack of what defines are available.
     @define_stack = ( $self->{ defines } );
     #  Stack of unclosed block-level statements.
@@ -1526,7 +1594,7 @@ sub _compile_template
           $local_syntax_regexp
         ) \s+ (.*?) \s* :> (.+)? $/sx;
 
-    @hunks = split( /(?=<:)/, $self->{ template }, -1 );
+    @hunks = split( /(?=<:)/so, $self->{ template }, -1 );
     delete $self->{ template };
 
     $self->{ pos_stack } = \@pos_stack;
@@ -1535,7 +1603,8 @@ sub _compile_template
 #my ( $dumpme );
     for( $i = 0; $i <= $#hunks; $i++ )
     {
-        my ( $hunk, $pos, $lines, $queue_pos, $last, $next );
+        my ( $hunk, $pos, $lines, $queue_pos, $last, $hunklen, $hunkstart,
+             $offset_index );
 
         $hunk = $hunks[ $i ];
 
@@ -1561,7 +1630,6 @@ sub _compile_template
             {
                 $hunk =~ s/:>(?:.*)$/:>/s;
                 splice( @hunks, $i, 1, $hunk, $rest );
-                $next = $i + 1;
             }
 
             $token =~ s/\s+/ /g;
@@ -1619,19 +1687,44 @@ sub _compile_template
             }
             elsif( $token eq 'expr' or $token eq 'var' )
             {
+                my ( $expr );
+
+                $expr = $self->_compile_expression( $args );
+
                 push @compiled,
-                    [ EXPR, $pos, $self->_compile_expression( $args ), 0 ];
+                    [ EXPR, $pos, $expr,
+                      #  Void-wrap assign expressions.
+                      ( ( $expr->[ 0 ] == OP_TREE ) and
+                        ( $expr->[ 2 ] eq '=' ) ) ? 1 : 0 ];
             }
             elsif( $token eq 'if' or $token eq 'unless' )
             {
+                my ( $expr );
+
+                $expr = $self->_compile_expression( $args );
+                if( $token ne 'if' )
+                {
+                    if( $expr->[ 0 ] == LITERAL )
+                    {
+                        $expr->[ 2 ] = not $expr->[ 2 ];
+                    }
+                    else
+                    {
+                        $expr = [ UNARY_OP, 'unless', 'not', $expr ];
+                    }
+                }
                 push @compiled,
-                    [ JUMP_IF, $pos, undef,
-                       $self->_compile_expression( $args ),
-                       $token eq 'if' ? 1 : 0 ];
+                    [ JUMP_IF, $pos, undef, $expr ];
+#                push @compiled,
+#                    [ JUMP_IF, $pos, undef,
+#                       $self->_compile_expression( $args ),
+#                       $token eq 'if' ? 1 : 0 ];
                 unshift @nest_stack, [ 'if', $#compiled ];
             }
             elsif( $token eq 'elsif' or $token eq 'elsunless' )
             {
+                my ( $expr );
+
                 if( $#nest_stack == -1 or
                     ( $nest_stack[ 0 ][ 0 ] ne 'if' and
                       $nest_stack[ 0 ][ 0 ] ne 'elsif' ) )
@@ -1641,10 +1734,24 @@ sub _compile_template
                 #  Closing jump of previous block.
                 push @compiled,
                     [ JUMP, $pos, undef ];
-                push @compiled,
-                    [ JUMP_IF, $pos, undef,
-                       $self->_compile_expression( $args ),
-                       $token eq 'elsif' ? 1 : 0 ];
+
+                $expr = $self->_compile_expression( $args );
+                if( $token ne 'elsif' )
+                {
+                    if( $expr->[ 0 ] == LITERAL )
+                    {
+                        $expr->[ 2 ] = not $expr->[ 2 ];
+                    }
+                    else
+                    {
+                        $expr = [ UNARY_OP, 'elsunless', 'not', $expr ];
+                    }
+                }
+                push @compiled, [ JUMP_IF, $pos, undef, $expr ];
+#                push @compiled,
+#                    [ JUMP_IF, $pos, undef,
+#                       $self->_compile_expression( $args ),
+#                       $token eq 'elsif' ? 1 : 0 ];
                 #  Now, update jump address of previous if/elsif
                 $compiled[ $nest_stack[ 0 ][ 1 ] ][ 2 ] =
                     $#compiled;
@@ -1711,19 +1818,13 @@ sub _compile_template
             {
                 my ( $iterator, $set );
 
-                $args = $self->_parse_args( $args, $token );
-
-                #  Extract the var name.
-                $iterator = $args->{ iterator };
-                delete $args->{ iterator };
-                $set      = $args->{ set };
-                delete $args->{ set };
-                $args = 0 unless scalar( keys( %{$args} ) );
+                #  TODO: syntax checking/error check needed here.
+                ( $iterator, $set ) = $args =~ /^(.*) in (.*)$/o;
 
                 push @compiled,
                     [ FOR, $pos, undef, $iterator,
                       $self->_compile_expression( $set ),
-                      $args, 1 ];
+                      1 ];
                 unshift @nest_stack, [ FOR, $#compiled ];
             }
             elsif( $token eq 'endfor' )
@@ -1739,12 +1840,12 @@ sub _compile_template
 
                 $last = shift @nest_stack;
 
-                #  Grab our iterator, set and args from the opening for
+                #  Grab our iterator and set from the opening for
+                #  TODO: needed anymore?  run grabs it from for-stack.
                 push @compiled,
                     [ END_FOR, $pos, $last->[ 1 ] + 1,
                       $compiled[ $last->[ 1 ] ][ 3 ],
-                      $compiled[ $last->[ 1 ] ][ 4 ],
-                      $compiled[ $last->[ 1 ] ][ 5 ] ];
+                      $compiled[ $last->[ 1 ] ][ 4 ] ];
                 #  Update jump address of opening for.
                 $compiled[ $last->[ 1 ] ][ 2 ] = $#compiled + 1;
             }
@@ -1813,7 +1914,9 @@ sub _compile_template
                         push @files, $filename;
                         $file_numbers{ $filename } = $#files;
                     }
-                    $queue_pos = [ $file_numbers{ $filename }, 1, 1 ];
+                    $queue_pos = [ $file_numbers{ $filename }, 1, 1, 0,
+                        $self->{ offsets } ];
+                    delete $self->{ offsets };
                 }
             }
             elsif( $token eq 'endinclude' )
@@ -1858,19 +1961,97 @@ sub _compile_template
             $trim_next = 0;
         }
 
+# +--------------------+------------------------+-----------------------------+
+# |  define >          |           nl           |         !nl                 |
+# +--- hunk v ---------+------------------------+-----------------------------+
+# |        !nl         |   not possible (1)     | offsets: char               |
+# |  nl after defines  |  offsets: nl, !char    | offsets: nl, !char (no-op)  |
+# | nl before defines  | offset: nl             | offsets: char               |
+# |                    | char:                  |                             |
+# |                    |  chars between nl &    |                             |
+# |                    |  start of define (2) + |                             |
+# |                    |  original define len + |                             |
+# |                    |  chars after define    |                             |
+# | nl between defines |      treat in reverse series as after/before         |
+# +--------------------+------------------------+-----------------------------+
+#
+#  TODO: (1) define spans hunks? (add test case!)
+#  TODO: define spans defines?   (add test case!)
+#  (2) characters is "fudged count", there may be other defines there. :(
+#
+# Detection:
+#   nl in define: nl offset != 0
+#   nl in hunk: nl in final hunk != total nl in offsets
+#
+
+
         #  Update pos.
+        $hunklen    = length( $hunk );
+        $pos        = $pos_stack[ 0 ];
+        $hunkstart  = $pos->[ 3 ];
+        $pos->[ 3 ] += $hunklen;
+
+#use Data::Dumper;
+#print "After hunk: xxx${hunk}xxx\nPos is: " . Data::Dumper::Dumper( $pos ) . "\n";
+
+        #  Do we have offsets, and have we just passed one?
+        $offset_index = -1;
+        while( $pos->[ 4 ] and $offset_index < $#{$pos->[ 4 ]} and
+               $pos->[ 4 ]->[ $offset_index + 1 ]->[ 0 ] <= $pos->[ 3 ] )
+        {
+            my ( $offset );
+
+            $offset_index++;
+            $offset = $pos->[ 4 ]->[ $offset_index ];
+            #  Replace any newlines in the section that was the contents
+            #  of a define, this is so that they don't count towards line
+            #  counts or finding the "most recent newline" for character
+            #  position counts.
+            #  This is inelegant but much simpler (and possibly faster)
+            #  than trying to compensate and find the "right" newline
+            #  to count from, especially since defines containing newlines
+            #  are hopefully a corner-case.
+#print "Offset index: $offset_index\nOffset: " . Data::Dumper::Dumper( $offset ) . "\n";
+#print "substr( hunk, " . ( $offset->[ 0 ] - $hunkstart ) . ", " . ( $offset->[ 1 ] ) . " )\n" if $offset->[ 2 ];
+
+            substr( $hunk, $offset->[ 0 ] - $hunkstart, $offset->[ 1 ] ) =~
+                s/\n/ /go
+                if $offset->[ 2 ];
+        }
+
 #        $lines = () = $hunk =~ /\n/g;
 #        $lines = $#{ [ $hunk =~ /\n/g ] } + 1;
-        $lines = $hunk =~ tr/\n//;
+        $lines   = $hunk =~ tr/\n//;
         if( $lines )
         {
-            $pos_stack[ 0 ][ 1 ] += $lines;
-            $pos_stack[ 0 ][ 2 ] =
+            $pos->[ 1 ] += $lines;
+            $pos->[ 2 ] =
                 ( $hunk =~ /\n(.+)\z/mo ) ? ( length( $1 ) + 1 ) : 1;
         }
         else
         {
-            $pos_stack[ 0 ][ 2 ] += length( $hunk );
+            $pos->[ 2 ] += $hunklen;
+        }
+
+        if( $offset_index != -1 )
+        {
+            my ( @offsets, $nlpos );
+
+            @offsets = splice( @{$pos->[ 4 ]}, 0, $offset_index + 1 );
+            $pos->[ 4 ] = undef if $#{$pos->[ 4 ]} == -1;
+
+            $nlpos = $lines ? ( $pos->[ 3 ] - $pos->[ 2 ] ) : 0;
+
+            foreach my $offset ( @offsets )
+            {
+                #  Don't apply the offset if it was before the final
+                #  non-define newline
+                next if $offset->[ 0 ] < $nlpos;
+#use Data::Dumper;
+#print "Applying offset: " . Data::Dumper::Dumper( $offset ) . "\n";
+#                $pos->[ 1 ] += $offset->[ 2 ];
+                $pos->[ 2 ] += $offset->[ 3 ];
+            }
         }
 
         unshift @pos_stack, $queue_pos if $queue_pos;
@@ -1903,6 +2084,7 @@ sub _compile_template
             files   => \@files,
         };
     $self->_optimize_template();
+    $self->{ template }->{ last_instr } = $#{$self->{ template }->{ program }};
 
     delete $self->{ current_pos };
     delete $self->{ pos_stack };
@@ -1920,29 +2102,18 @@ sub _compile_template
 #}
 }
 
-#  Warning, pass-by-ref: modifies $template.
 sub _optimize_template
 {
     my ( $self ) = @_;
-    my ( $program, @nest_stack, %deletes,  %jump_targets, @loop_blocks );
+    my ( $program, @nest_stack, %deletes, %jump_targets, @loop_blocks,
+         $value );
+
 #    my ( @function_table, %function_index );
 
     #  Optimization pass:
     #    TODO: unroll constant low-count fors?
 
     $program = $self->{ template }->{ program };
-
-    #  Void-wrap assign expressions.
-    for( my $i = 0; $i <= $#{$program}; $i++ )
-    {
-        #  Are we an EXPR instr and is our expr an OP_TREE expr and op '='?
-        next unless $program->[ $i ]->[ 0 ] == EXPR and
-                    $program->[ $i ]->[ 2 ]->[ 0 ] == OP_TREE and
-                    $program->[ $i ]->[ 2 ]->[ 2 ] eq '=';
-
-        $program->[ $i ]->[ 3 ] = 1;
-    }
-
 
     #  Fold constant expr into constant instr.
     for( my $i = 0; $i <= $#{$program}; $i++ )
@@ -1962,26 +2133,24 @@ sub _optimize_template
     %deletes    = ();
     for( my $i = 0; $i <= $#{$program}; $i++ )
     {
-        my ( $line, $value );
+        next unless $program->[ $i ]->[ 0 ] == JUMP_IF and
+                    $program->[ $i ]->[ 3 ]->[ 0 ] == LITERAL;
 
-        $line = $program->[ $i ];
-        next unless $line->[ 0 ] == JUMP_IF and
-                    $line->[ 3 ]->[ 0 ] == LITERAL;
-
-        $value = $self->_eval_expression( $line->[ 3 ], 1 );
-        $value = not $value if $line->[ 4 ];
+        $value = $self->_eval_expression( $program->[ $i ]->[ 3 ], 1 );
+#        $value = not $value if $program->[ $i ]->[ 4 ];
 
         if( $value )
         {
-            #  Always true, fold it into a JUMP.
-#warn "Folding constant JUMP_IF into JUMP.";
-            $program->[ $i ] = [ JUMP, $line->[ 1 ], $line->[ 2 ] ];
+            #  Always true, remove the JUMP.
+#warn "Folding constant JUMP_IF into no-op.";
+            $deletes{ $i } = 1;
         }
         else
         {
-            #  Always false, remove the JUMP.
-#warn "Folding constant JUMP_IF into no-op.";
-            $deletes{ $i } = 1;
+            #  Always false, fold it into a JUMP.
+#warn "Folding constant JUMP_IF into JUMP.";
+            $program->[ $i ] = [ JUMP, $program->[ $i ]->[ 1 ],
+                $program->[ $i ]->[ 2 ] ];
         }
     }
     $self->_delete_instr( $program, keys( %deletes ) ) if %deletes;
@@ -2057,12 +2226,12 @@ sub _optimize_template
     #  TODO: this should be moved into the above loop to keep it single-pass.
     foreach my $block ( @loop_blocks )
     {
-        my ( $special_vars_needed );
+        my ( $special_vars_needed, $line );
 
         $special_vars_needed = 0;
         FORBLOCK: for( my $i = $block->[ 0 ] + 1; $i < $block->[ 1 ]; $i++ )
         {
-            my ( $line, @exprs );
+            my ( @exprs );
 
             $line = $program->[ $i ];
             if( $line->[ 0 ] == EXPR )
@@ -2095,7 +2264,7 @@ sub _optimize_template
 
                     $segments = $expr->[ 2 ];
                     #  Needs to have two or more segments.
-                    next unless $#{$segments} > 0;
+                    next unless $expr->[ 4 ] > 0;
                     #  Top stem isn't our loop var, we're not interested.
                     next unless $segments->[ 0 ] eq $block->[ 2 ];
 
@@ -2128,7 +2297,7 @@ sub _optimize_template
                 }
             }
         }
-        $program->[ $block->[ 0 ] ]->[ 6 ] = 0 unless $special_vars_needed;
+        $program->[ $block->[ 0 ] ]->[ 5 ] = 0 unless $special_vars_needed;
     }
 
 
@@ -2203,7 +2372,7 @@ sub _optimize_template
 sub _delete_instr
 {
     my ( $self, $program, @addrs ) = @_;
-    my ( %renumbers );
+    my ( %renumbers, $instr, $num, $lastnum, $lastoffset, $offset, $numaddr );
 
 #warn "** Deleting instr: " . join( ', ', @addrs ) . ".";
 #warn "-- Pre:\n" . $self->dumpable_template();
@@ -2224,29 +2393,49 @@ sub _delete_instr
 
     #  Now we need to renumber any jump and loop targets affected.
     %renumbers = ();
+    $lastnum = $lastoffset = 0;
+    $numaddr = $#addrs;
     foreach my $line ( @{$program} )
     {
-        next unless $line->[ 0 ] == JUMP    or
-                    $line->[ 0 ] == JUMP_IF or
-                    $line->[ 0 ] == FOR     or
-                    $line->[ 0 ] == END_FOR;
+        next unless ( $instr = $line->[ 0 ] ) == JUMP or
+                      $instr == JUMP_IF or
+                      $instr == FOR     or
+                      $instr == END_FOR;
 
-        if( exists( $renumbers{ $line->[ 2 ] } ) )
+        if( exists( $renumbers{ $num = $line->[ 2 ] } ) )
         {
-            $line->[ 2 ] = $renumbers{ $line->[ 2 ] };
+            $line->[ 2 ] = $renumbers{ $num };
             next;
         }
 
-        my $offset = 0;
-        foreach my $addr ( @addrs )
+        #  This contraption takes advantages of the fact that jumps
+        #  tend to have fairly local targets to other local jumps'
+        #  targets, rather than searching from the start of the
+        #  template each time.
+        if( $lastnum <= $num )
         {
-            last if $addr >= $line->[ 2 ];
-            $offset++;
+#use Data::Dumper;
+#print "Jump target: $num.\nDeleted: ", Data::Dumper::Dumper( \@addrs ), "\n";
+            #  This jump is forwards from our last, search forwards.
+            for( $offset = $lastoffset; $offset <= $numaddr; $offset++ )
+            {
+#print "  Offset is $offset, addrs[ $offset ] is $addrs[ $offset ]\n";
+                last if $addrs[ $offset ] >= $num;
+            }
         }
+        else
+        {
+            #  This jump is before our last, search backwards.
+            for( $offset = $lastoffset; $offset > 0; $offset-- )
+            {
+                last if $addrs[ $offset - 1 ] < $num;
+            }
+        }
+        $lastnum    = $num;
+        $lastoffset = $offset;
 
         #  Cache the result, if-elsif-else will have lots of the same targets.
-        $renumbers{ $line->[ 2 ] } = $line->[ 2 ] - $offset;
-        $line->[ 2 ] = $line->[ 2 ] - $offset;
+        $renumbers{ $num } = ( $line->[ 2 ] -= $offset );
     }
 
 #warn "-- Renumbered:\n" . $self->dumpable_template();
@@ -2397,6 +2586,10 @@ sub _compile_expression
     $self->error( "Unrecognised atomic expression element: $expression" );
 }
 
+#  TODO: replace with "replace tightest-binding operator with subtree"
+#        while-loop, rather than recursive divide-and-conquer by
+#        loosest-binding operator.
+#        will eleminate the depth*depth cartesian loops.
 sub _build_op_tree
 {
     my ( $self, $arr ) = @_;
@@ -2479,23 +2672,18 @@ sub _build_op_tree
 sub _compile_var
 {
     my ( $self, $var ) = @_;
-    my ( $original, @segments, @originals );
+    my ( $original, @segments, @originals, $segment );
 
 #print "compile_var( $var )\n";
 
+    return( $symbolic_literals{ $var } )
+        if exists( $symbolic_literals{ $var } );
+
     $original = $var;
 
-    #  Special vars that are symbolic literals.
-    return( [ LITERAL, 'undef', undef ] ) if $var eq 'undef';
-    return( [ LITERAL, 'null',  undef ] ) if $var eq 'null';
-    return( [ LITERAL, 'cr', "\n" ] )     if $var eq 'cr';
-
-    @segments  = ();
-    @originals = ();
+    @segments = @originals = ();
     while( $var and ( $var =~ $capture_variable_regexp ) )
     {
-        my ( $segment );
-
         $segment = $1;
         $var     = $2 ? substr( $2, 1 ) : '';
 #print "Segment: $segment\nRest: $var\n";
@@ -2521,9 +2709,9 @@ sub _compile_var
             {
                 push @segments, $index;
             }
+            $subscript =~ s/^\s+//o;
+            $subscript =~ s/\s+$//o;
             push @originals, $subscript;
-            $originals[ $#originals ] =~ s/^\s+//;
-            $originals[ $#originals ] =~ s/\s+$//;
         }
     }
 
@@ -2535,17 +2723,18 @@ sub _compile_var
         pop @segments;
         pop @originals;
         return( [ FUNC, $original, 'size',
-            [ [ VAR, $original, [ @segments ], [ @originals ] ] ],
+            [ [ VAR, $original, \@segments, \@originals, $#segments ] ],
             ] );
     }
 
-    return( [ VAR, $original, [ @segments ], [ @originals ] ] );
+    return( [ VAR, $original, \@segments, \@originals, $#segments ] );
 }
 
 sub _compile_func_args
 {
     my ( $self, $arglist ) = @_;
-    my ( $original, @args );
+    my ( $original, @args, $nextarg );
+
 
     $arglist =~ s/^\s+//;
     $arglist =~ s/\s+$//;
@@ -2554,18 +2743,17 @@ sub _compile_func_args
 
     @args = ();
     while( defined( $arglist ) and length( $arglist ) and
-        ( $arglist =~ $capture_expr_comma_remain_regexp ) )
+        ( $nextarg, $arglist ) =
+            ( $arglist =~ $capture_expr_comma_remain_regexp ) )
     {
-        my ( $nextarg );
-
-        $nextarg = $1;
-        $arglist = $2;
+#        $nextarg = $1;
+#        $arglist = $2;
         push @args, $self->_compile_expression( $nextarg );
     }
     $self->error(
         "Malformed function arguments list: '$arglist' in '$original'" )
         if $arglist;
-    return( [ @args ] );
+    return( \@args );
 }
 
 sub _eval_expression
@@ -2573,13 +2761,13 @@ sub _eval_expression
     my ( $self, $expr, $undef_ok ) = @_;
     my ( $type, $val );
 
-    $self->error( "Bad arg to _eval_expression(): $expr" )
-        unless ref( $expr );
+#  "can't happen" in normal use, will error on next line anyway.
+#    $self->error( "Bad arg to _eval_expression(): $expr" )
+#        unless ref( $expr );
 
-    $type = $expr->[ 0 ];
 #$self->{ exprcount }->{ $type }++;
 #my $exprstart = Time::HiRes::time();
-    if( $type == LITERAL )
+    if( ( $type = $expr->[ 0 ] ) == LITERAL )
     {
         $val = $expr->[ 2 ];
     }
@@ -2731,27 +2919,28 @@ sub _assign_var
 
 sub _eval_var
 {
-    my ( $self, $instr, $original, $segments, $originals, $undef_ok ) = @_;
-    my ( $val, $stem, $last, $i );
-
-    $last = $#{$segments};
-
     #  The stem value _is_ the value if there's no other segments.
-    return( $self->{ var_stack }->[ 0 ]->{ $segments->[ 0 ] } )
-        if $last == 0;
+    #  This is pulled above the sub's argument extraction for speed, I
+    #  will rot in hell for this, but it _is_ performance-critical.
+    return( $_[ 0 ]->{ var_stack_top }->{ $_[ 3 ]->[ 0 ] } )
+        unless $_[ 5 ];
+
+    my ( $self, $instr, $original, $segments, $originals, $last, $undef_ok ) = @_;
+    my ( $val, $stem, $i, $special_values, $leaf, $type );
 
     #  Determine the stem (top-level) value
     $stem = $segments->[ 0 ];
-    $val  = $self->{ var_stack }->[ 0 ]->{ $stem };
+    $val  = $self->{ var_stack_top }->{ $stem };
+    $special_values = $self->{ special_values };
 
     #  Check to see if it's a special loop variable or something.
     if( $last >= 1 and
-        $self->{ special_values }->{ $stem } and
+        $special_values->{ $stem } and
         exists( $special_values_names{ $segments->[ 1 ] } ) )
     {
         #  Don't bother checking that the leaf isn't a ref, it won't
         #  match a key and saves on a ref() call when it isn't.
-        $val = $self->{ special_values }->{ $stem }->[
+        $val = $special_values->{ $stem }->[
             $special_values_names{ $segments->[ 1 ] } ];
         $i = 2;
     }
@@ -2763,16 +2952,10 @@ sub _eval_var
     #  Navigate our way down the remaining segments.
     for( ; $i <= $last; $i++ )
     {
-        my ( $leaf, $type );
-
-        $leaf = $segments->[ $i ];
-
-        if( ref( $leaf ) )
+        if( ref( $leaf = $segments->[ $i ] ) )
         {
             #  It's an index expression of the style var[index]
-            $leaf = $self->_eval_expression( $leaf );
-
-            unless( defined $leaf )
+            unless( defined( $leaf = $self->_eval_expression( $leaf ) ) )
             {
                 return( undef ) if $undef_ok;
                 $self->error(
@@ -2785,10 +2968,10 @@ sub _eval_var
             #  ones will have been checked outside the loop.
             if( $i == 1 )
             {
-                if( $self->{ special_values }->{ $stem } and
+                if( $special_values->{ $stem } and
                     exists( $special_values_names{ $leaf } ) )
                 {
-                    $val = $self->{ special_values }->{ $stem }->[
+                    $val = $special_values->{ $stem }->[
                         $special_values_names{ $leaf } ];
                     next;
                 }
@@ -2806,9 +2989,7 @@ sub _eval_var
                   "of undefined parent in '$original'" );
         }
 
-        $type = ref( $val );
-
-        if( not $type )
+        if( not ( $type = ref( $val ) ) )
         {
 #use Data::Dumper;
 #warn "originals = " . Data::Dumper::Dumper( $originals ) . "\ni = $i\nleaf = $leaf\noriginal = $original\nsegments = " . Data::Dumper::Dumper( $segments ) . "\n";
@@ -2910,21 +3091,35 @@ sub _eval_method
 
 sub run
 {
-    my ( $self ) = @_;
-    my ( $lineno, $ret, @var_stack, @for_stack, $run_start, $total_instr,
-        $program, $last_instr, $special_values );
+    my $self = $_[ 0 ];
+    #  $line, $instr, $value lexically belong inside the loop,
+    #  but in such a tight loop it's a performance hit, they're
+    #  initialized at the start of each use anyway.
+    #  If oddness ensues, move this line into the head of the loop and
+    #  see if oddness abates.
+    my ( $lineno, $ret, @var_stack, @for_stack, $run_start,
+        $program, $last_instr, $special_values, $line, $instr, $value );
 
-#$ret = ' ' x 80_000;
+    #  For large templates this tricks perl's memory handling into
+    #  giving us a big chunk of contiguous memory so that $ret .= $whatever
+    #  doesn't have to keep incrementally adding more memory, this can
+    #  give a minor-but-not-insignificant speed boost of ~2-3%.
+    #  This may be highly sensitive to perl version and OS, and I'm
+    #  not sure it does nice things to the memory profile of the process
+    #  either...
+    $ret = ' ' x 80_000;
     $ret = '';
     $lineno = 0;
 
     @var_stack = ( $self->{ vars } );
     @for_stack = ();
 
-    $self->{ var_stack } = \@var_stack;
-    $self->{ phase }     = 'runtime';
+    $self->{ var_stack }     = \@var_stack;
+    $self->{ var_stack_top } = $var_stack[ 0 ];
 
-    $total_instr = 0;
+    $self->{ phase } = 'runtime';
+
+#my $total_instr = 0;
 
 #foreach my $prof ( qw/instr expr func op/ )
 #{
@@ -2934,35 +3129,27 @@ sub run
 
     #  Local unroll of some of our properties
     $program        = $self->{ template }->{ program };
+    $last_instr     = $self->{ template }->{ last_instr };
 #    @function_table =
 #        map { $functions{ $_ } } @{$self->{ template }->{ function_table }};
     $special_values = $self->{ special_values };
 
-    $last_instr  = $#{$program};
     while( $lineno <= $last_instr )
     {
-        my ( $line, $instr );
-
         $line  = $program->[ $lineno++ ];
         $self->{ current_pos } = $line->[ 1 ];
-
-        $instr = $line->[ 0 ];
-
-        $total_instr++;
 
         #  TODO: look at $pos->[ 0 ] to determine file and recreate
         #    the "stack" for error traces if neccessary.
 
-#$self->{ instrcount }->{ $instr }++;
+#$self->{ instrcount }->{ $line->[ 0 ] }++;
 #my $instrstart = Time::HiRes::time();
-        if( $instr == LITERAL )
+        if( ( $instr = $line->[ 0 ] ) == LITERAL )
         {
             $ret .= $line->[ 2 ];
         }
         elsif( $instr == EXPR )
         {
-            my ( $value );
-
             $value = $self->_eval_expression( $line->[ 2 ] );
             $ret .= ( ( ref( $value ) eq 'SCALAR' ) ? ${$value} : $value )
                 unless $line->[ 3 ];
@@ -2974,12 +3161,10 @@ sub run
         }
         elsif( $instr == JUMP_IF )
         {
-            my ( $value );
-
 #$ret .= "[jump if/unless $line->[3]]";
             $value = $self->_eval_expression( $line->[ 3 ], 1 );
-            $value = not $value if $line->[ 4 ];
-            $lineno = $line->[ 2 ] if $value;
+#            $value = not $value if $line->[ 4 ];
+            $lineno = $line->[ 2 ] unless $value;
         }
         elsif( $instr == FOR )
         {
@@ -2987,7 +3172,7 @@ sub run
 
             $iterator        = $line->[ 3 ];
             $set             = $line->[ 4 ];
-            $specials_needed = $line->[ 6 ];
+            $specials_needed = $line->[ 5 ];
 
             $set_value = $self->_eval_expression( $set, 1 );
             $set_value = [] unless defined $set_value;
@@ -3011,7 +3196,7 @@ sub run
             }
             else
             {
-                my ( $value, $context );
+                my ( $context );
 
                 $value = $set_value->[ 0 ];
                 $special_values->{ $iterator } =
@@ -3034,35 +3219,35 @@ sub run
                     $context = { %{$var_stack[ 0 ]} };
                     $context->{ $iterator } = $value;
                     unshift @var_stack, $context;
+                    $self->{ var_stack_top } = $context;
                 }
                 else
                 {
                     $var_stack[ 0 ]->{ $iterator } = $value;
                 }
                 unshift @for_stack, [
-                    0, $set_value, $hash, $context ? 1 : 0, $specials_needed,
+                    0, $last, $set_value, $hash, $context ? 1 : 0,
+                    $specials_needed,
                     ];
             }
         }
         elsif( $instr == END_FOR )
         {
-            my ( $iterator, $set, $set_value, $counter, $hash, $last,
+            my ( $iterator, $set_value, $counter, $hash, $last,
                  $specials_needed );
 
             $iterator = $line->[ 3 ];
-            $set      = $line->[ 4 ];
 
-            $counter         = $for_stack[ 0 ]->[ LOOP_STACK_COUNTER ] + 1;
-            $set_value       = $for_stack[ 0 ]->[ LOOP_STACK_SET ];
-            $hash            = $for_stack[ 0 ]->[ LOOP_STACK_HASH ];
-            $specials_needed = $for_stack[ 0 ]->[ LOOP_STACK_SPECIALS ];
-            $last            = $#{$set_value};
+            $counter = ++$for_stack[ 0 ]->[ LOOP_STACK_COUNTER ];
+            $last    = $for_stack[ 0 ]->[ LOOP_STACK_LAST ];
 
             if( $counter <= $last )
             {
-                my ( $value );
+                $set_value       = $for_stack[ 0 ]->[ LOOP_STACK_SET ];
+                $hash            = $for_stack[ 0 ]->[ LOOP_STACK_HASH ];
+                $specials_needed = $for_stack[ 0 ]->[ LOOP_STACK_SPECIALS ];
 
-                $value = $set_value->[ $counter ];
+                $var_stack[ 0 ]->{ $iterator } = $set_value->[ $counter ];
                 $special_values->{ $iterator } =
                     [
                         $counter,
@@ -3075,13 +3260,9 @@ sub run
                         $counter == $last ?
                             undef :
                             $set_value->[ $counter + 1 ],
-                        $hash ? $hash->{ $value } : undef,
+                        $hash ? $hash->{ $set_value->[ $counter ] } : undef,
                     ]
                     if $specials_needed;
-
-                $var_stack[ 0 ]->{ $iterator } = $value;
-
-                $for_stack[ 0 ]->[ 0 ] = $counter;
 
                 $lineno = $line->[ 2 ];
             }
@@ -3090,6 +3271,7 @@ sub run
                 if( $for_stack[ 0 ]->[ LOOP_STACK_CONTEXT ] )
                 {
                     shift @var_stack;
+                    $self->{ var_stack_top } = $var_stack[ 0 ];
                 }
                 else
                 {
@@ -3112,17 +3294,19 @@ sub run
                     $new_context->{ $var }, 1 )
             }
             unshift @var_stack, $context;
+            $self->{ var_stack_top } = $context;
         }
         elsif( $instr == CONTEXT_POP )
         {
 #$ret .= "[context_pop]";
             shift @var_stack;
+            $self->{ var_stack_top } = $var_stack[ 0 ];
         }
 #  TODO:  ick, hate cut-n-paste code.
 #  TODO:  unroll constant parts of hash lookups to local var
         elsif( $self->{ local_syntaxes }->{ '.instr' }->{ $instr } )
         {
-            my ( $executor, $token, $value );
+            my ( $executor, $token );
 
             $token    = $self->{ local_syntaxes }->{ '.instr' }->{ $instr };
             $executor = $self->{ local_syntaxes }->{ $token }->{ run };
@@ -3133,7 +3317,7 @@ sub run
 #  TODO:  unroll constant parts of hash lookups to local var
         elsif( $syntaxes{ '.instr' }->{ $instr } )
         {
-            my ( $executor, $token, $value );
+            my ( $executor, $token );
 
             $token    = $syntaxes{ '.instr' }->{ $instr };
             $executor = $syntaxes{ $token }->{ run };
@@ -3150,7 +3334,7 @@ sub run
 
     delete $self->{ current_pos };
     delete $self->{ var_stack };
-    delete $self->{ input };
+    delete $self->{ var_stack_top };
     delete $self->{ phase };
 
     return( \$ret );
@@ -3211,15 +3395,14 @@ sub dumpable_template
         }
         elsif( $instr == JUMP_IF )
         {
-            $ret .= $line->[ 2 ] .
-                ( $line->[ 4 ] ? ' unless ' : ' if ' ) .
+            $ret .= $line->[ 2 ] . ' unless ' .
                 _tinydump( $line->[ 3 ] ) . "\n";
         }
         elsif( $instr == FOR )
         {
             $ret .= "$line->[ 3 ] in " . _tinydump( $line->[ 4 ] ) .
                 " then $line->[ 2 ]";
-            $ret .= " (no special-vars)" unless $line->[ 6 ];
+            $ret .= " (no special-vars)" unless $line->[ 5 ];
             $ret .= "\n";
         }
         elsif( $instr == END_FOR )
@@ -5521,6 +5704,8 @@ For loop stack array indices:
 
 =item LOOP_STACK_COUNTER
 
+=item LOOP_STACK_LAST
+
 =item LOOP_STACK_SET
 
 =item LOOP_STACK_HASH
@@ -5953,7 +6138,11 @@ template position added.
 
 =head1 QUALITY ASSURANCE AND TEST METRICS
 
-Currently there are 1105 tests within the distribution, with coverage:
+As of version 1.01_07 there are 1116 tests within the distribution, if the
+this isn't the current version number, I've forgotton to update this section,
+sorry. :)
+
+The tests have coverage:
 
   ---------------------------- ------ ------ ------ ------ ------ ------ ------
   File                           stmt   bran   cond    sub    pod   time  total
@@ -6000,11 +6189,39 @@ and don't report from the perspective of your calling code.
 
 =item line numbers and char counts partially broken.
 
-Currently line numbers and character counts into the original file
-are occassionally incorrect in a number of situations including
-(but not limited to) define replacement and a couple of other as-yet
-unknown factors pending investigation.  This will be fixed in a later
-version.
+Line numbers and character counts into the original file
+are still occassionally incorrect in a couple of (mostly pathological)
+situations where template defines either contain fragments of a template
+statement that spans the boundary of the statement, or that contain
+partial defines themselves.
+
+For example, both of these will confuse the character position count:
+
+  #  ${EGADS} overlaps one, but not both, end of the <: expr :> statement.
+  $template->set_template_string(
+      "This is${EGADS}ological' :>.",
+      {
+          EGADS => " <: expr 'path",
+      } );
+
+  #  ${ERKLE} overlaps one, but not both, end of ${HURKLE}.
+  $template->set_template_string(
+      "And so${ERKLE}KLE}this.",
+      {
+          ERKLE  => '${HUR',
+          HURKLE => " <: expr 'is' :> ",
+      } );
+
+Although in both these examples the C<expr> will be constant-folded away
+and the misnumbered positions will be undetectable.
+Examples that don't optimize away are more complicated and unfortunately
+obscure the root problem behaviour.
+
+Quite what line numbers result from these constructs is undefined and
+unsupported, and possibly will be subject to change without notice.
+
+This bug is not likely to be corrected soon unless it impacts people
+trying to do something sane. :)
 
 =item Quoted-':>' inside expressions still terminate the statement
 
@@ -6111,8 +6328,8 @@ of the loops, whereas the I<context-folded> case will cause the new
 variable to exist until the end of the outer context the C<for>
 loop was called from.
 
-This is a bug, and the correct behaviour would be too not I<context-fold>
-loop if there's an assign inside, however this is difficult to test until
+This is a bug, and the correct behaviour would be to not I<context-fold>
+the loop if there's an assign inside, however this is difficult to test until
 I<context-folding> of loops is performed during the compile-phase
 optimization rather than at runtime.
 
@@ -6127,6 +6344,14 @@ There's probably no reason why void-context flagging couldn't happen as
 part of the expression compilation stage, which would be in time to also
 flag it as zero-width, so this should be expected to happen in a future
 release.
+
+=item JMP_IF confusingly named
+
+The C<JMP_IF> instruction is confusingly misnamed, since it's really
+a C<JMP_UNLESS> instruction. That is it means "jump if the expression
+is false" as opposed to the intuitive "jump if the expression is true".
+Unless you're messing with the compiled template for some reason, this
+is unlikely to effect you.
 
 =back
 
