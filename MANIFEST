@@ -66,5 +66,4 @@ t/test_templates/subdir_include.txt
 t/test_templates/template_subdir/template_in_a_subdir.txt
 t/test_templates/unreadable.txt
 t/test_templates/unreadable_include.txt
-TODO
 SIGNATURE    Added here by Module::Build
