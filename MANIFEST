@@ -30,6 +30,7 @@ t/51-runtime-expr-unary-op.t
 t/52-runtime-expr-operators.t
 t/55-runtime-expr-methods.t
 t/60-custom-syntax.t
+t/65-delimiters.t
 t/70-custom-function.t
 t/75-function-library.t
 t/76-string-functions.t
@@ -37,6 +38,7 @@ t/77-number-functions.t
 t/80-files.t
 t/82-cache.t
 t/85-dump.t
+t/86-template-toolkit-compat.t
 t/88-misc.t
 t/90-pod.t
 t/99-pod-coverage.t
