@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.55.
+signed via the Module::Signature module, version 0.61.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -16,15 +16,15 @@ Hash: SHA1
 
 SHA1 9faab88b9b97e93e15ec99a72ffb0cab3190240d Build.PL
 SHA1 e1f70e2245190c805ca259c373eb4c39734eadf6 COPYING
-SHA1 0feabe502cc0f0ee050d571a924d9428d4afdef8 Changes
+SHA1 46539079f98784e3ca888d50b57ec105f296cd95 Changes
 SHA1 86e2e906550586be2179ed4a501619a6cd99b6e6 MANIFEST
-SHA1 881732da04cfaae5904e44e0a7bc4b9d59236e37 META.yml
-SHA1 9fd0cc4f1b081f2ad0c273d17ae2f9945b63df38 Makefile.PL
+SHA1 de27f69d054467eba18c52c765591ccff71ab475 META.yml
+SHA1 cd9351675c76304eab73b5d3e893fbb879e1e434 Makefile.PL
 SHA1 5b7a1e1e33e1570106f6554ea36c6878bc235562 README
-SHA1 d6a8623c3e2d0f628f00cc2f2521726c75d6e4f9 lib/Template/Sandbox.pm
-SHA1 1bc6c1ffe3c1d2ab222eb7419433cc36e6e4cb9c lib/Template/Sandbox/Library.pm
-SHA1 446fec68feaa76a83ca9ba7c91229ca37a1ad5b5 lib/Template/Sandbox/NumberFunctions.pm
-SHA1 0310e7735516af27cbd72838d3a90d57f95fc935 lib/Template/Sandbox/StringFunctions.pm
+SHA1 ab3e9fbdad34ba7a1d3e12b963aa7804d4c95625 lib/Template/Sandbox.pm
+SHA1 b86c15c78cc391cf8cea3edd8af9d6d2c54248b6 lib/Template/Sandbox/Library.pm
+SHA1 6caf4bee49ff3c03f1f823dd97836433ae1ddc8b lib/Template/Sandbox/NumberFunctions.pm
+SHA1 720c56ad166321ce643280e82fb561b33d677532 lib/Template/Sandbox/StringFunctions.pm
 SHA1 82d4eabedfe344636dc1023e4070d2f8b3680bca t/00-load.t
 SHA1 f5e793ad737ab7c7b5a59c4a868cc7e453fce3e9 t/05-export.t
 SHA1 d219f7185ad10131e35a6d7b7b0a781890b98e2c t/10-constructor.t
@@ -33,9 +33,9 @@ SHA1 89e2288d3c1d3083b634f44efb886c8f0dccd847 t/12-vars.t
 SHA1 897826e13381cfcd46ab3fd05833cdf695164d24 t/20-compile-syntax.t
 SHA1 e7fe45e3cb79e8023c86992ac080b1bfa571e035 t/21-compile-syntax-errors.t
 SHA1 e9920c97c8f305d2c4e9ceb717cd45ea127cfc42 t/22-compile-defines.t
-SHA1 b21d96572618bd1c88a7d623c8089a64e6a56035 t/26-compile-expr-errors.t
+SHA1 965bd43e2856e3ee7652cfff3030647612706863 t/26-compile-expr-errors.t
 SHA1 74a5231f84e73e8bed1e19a79cde739bcffe4394 t/30-runtime-expr-constant.t
-SHA1 1c4866144480db7edc1aab7797a8d772b9239b60 t/31-runtime-expr-var.t
+SHA1 2b897a270abe5850887ddb756de5a57521be1857 t/31-runtime-expr-var.t
 SHA1 ebf12bd3a53132513d00445a6d748de04a429fc2 t/32-runtime-constant-var.t
 SHA1 0ff518bd50390364e99d5ed849ef6e5ad91ec0cf t/40-runtime-if.t
 SHA1 3bcf140825aee2fb4525aab48b1d664283fb622d t/45-runtime-for.t
@@ -44,17 +44,17 @@ SHA1 711ba2e95009b8720211a3b53259a3bf0393a07b t/48-runtime-comment.t
 SHA1 3e99bbc02c674b2c6ebb34e2c17ed6d72f1a8286 t/50-runtime-expr-atomic.t
 SHA1 a0d197fd7c621dec1e7d66c8a0f4b9b65c7dda49 t/51-runtime-expr-unary-op.t
 SHA1 c4d5b473531de593cbb443a09420f7c9524323da t/52-runtime-expr-operators.t
-SHA1 671ea8d65a2ae07f9d943b4bd87103424ff753f6 t/55-runtime-expr-methods.t
+SHA1 74fa62edd274ec662ca6e177eb37fc43263e9581 t/55-runtime-expr-methods.t
 SHA1 047c050404bf67cd30fc3bb36ef58818eab7730f t/60-custom-syntax.t
 SHA1 06c3a69cc22a41be1a0665777cc6fdd4dc344591 t/65-delimiters.t
-SHA1 321de27a8e6fd73abb3aafe2a1c426220af2ccaa t/70-custom-function.t
+SHA1 8fb1125458625673e68a5d624122a6d37790034e t/70-custom-function.t
 SHA1 fefc9e987e503f89d4ff06f3db5ec12b2087bec7 t/75-function-library.t
 SHA1 1148a7a12f3a40d3dedcb054ceab51ea5f55dcbf t/76-string-functions.t
 SHA1 67a0678610caf9785b0829d45f78c2d7bf2b21d2 t/77-number-functions.t
 SHA1 27a5b12852afd1f0564fe534b4bb1503b7f5a1f3 t/80-files.t
 SHA1 0e7b3fdfb461a4f2f30756e69b425e29bc145ce9 t/82-cache.t
 SHA1 d6d98b82252f492d9d967a2686945b581b5e3158 t/85-dump.t
-SHA1 2c7428f53a5a00ffd721875c077ae4c1fe702438 t/86-template-toolkit-compat.t
+SHA1 b37275ba9b100ae16b8c022fa4bc5f6704596569 t/86-template-toolkit-compat.t
 SHA1 032b7451e4e6f8bdd0170edc5223f0bd02e44de8 t/88-misc.t
 SHA1 640935336dc1123c0069bcf5432bcaedc2cf22d3 t/90-pod.t
 SHA1 28f4bc4b60453739559694421acdd0aa03b2c9f1 t/99-pod-coverage.t
@@ -87,7 +87,7 @@ SHA1 2f92661a5aa5b1bed509a05990dd4a8292852efd t/test_templates/unreadable_includ
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAkt66qkACgkQk0asf7iG0tTDngCeMhK/tluUDFNQFTQ/3A6v1Ox2
-tcsAnjLkfA1nmicPnG0hECS8AZGJ7dFj
-=BflP
+iEYEARECAAYFAkufg84ACgkQk0asf7iG0tQZmACfQoFhV2VIGtXa72iLICt8ClWn
+rS8AoLY7d1Knj0S94K5bLPzLfIzYwCXx
+=dDkv
 -----END PGP SIGNATURE-----
