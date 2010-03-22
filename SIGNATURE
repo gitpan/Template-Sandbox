@@ -16,15 +16,15 @@ Hash: SHA1
 
 SHA1 9faab88b9b97e93e15ec99a72ffb0cab3190240d Build.PL
 SHA1 e1f70e2245190c805ca259c373eb4c39734eadf6 COPYING
-SHA1 46539079f98784e3ca888d50b57ec105f296cd95 Changes
+SHA1 f6adb5884f2ef0fcfe9820242b97d93b97def20f Changes
 SHA1 86e2e906550586be2179ed4a501619a6cd99b6e6 MANIFEST
-SHA1 de27f69d054467eba18c52c765591ccff71ab475 META.yml
+SHA1 ffca9eb70bc26432e506677243e4f1d09c583af7 META.yml
 SHA1 cd9351675c76304eab73b5d3e893fbb879e1e434 Makefile.PL
 SHA1 5b7a1e1e33e1570106f6554ea36c6878bc235562 README
-SHA1 ab3e9fbdad34ba7a1d3e12b963aa7804d4c95625 lib/Template/Sandbox.pm
-SHA1 b86c15c78cc391cf8cea3edd8af9d6d2c54248b6 lib/Template/Sandbox/Library.pm
-SHA1 6caf4bee49ff3c03f1f823dd97836433ae1ddc8b lib/Template/Sandbox/NumberFunctions.pm
-SHA1 720c56ad166321ce643280e82fb561b33d677532 lib/Template/Sandbox/StringFunctions.pm
+SHA1 5e3ba1d6bbe8e5c8dc625190aa059a060f527330 lib/Template/Sandbox.pm
+SHA1 d53abc05a5c4568a6a51ceabf0733f0ac205d8a3 lib/Template/Sandbox/Library.pm
+SHA1 c6470ad01b526d54430d35b0c8e4c3d67c175eb1 lib/Template/Sandbox/NumberFunctions.pm
+SHA1 b24749eda0e69589d37767ca64201bb457fc167b lib/Template/Sandbox/StringFunctions.pm
 SHA1 82d4eabedfe344636dc1023e4070d2f8b3680bca t/00-load.t
 SHA1 f5e793ad737ab7c7b5a59c4a868cc7e453fce3e9 t/05-export.t
 SHA1 d219f7185ad10131e35a6d7b7b0a781890b98e2c t/10-constructor.t
@@ -87,7 +87,7 @@ SHA1 2f92661a5aa5b1bed509a05990dd4a8292852efd t/test_templates/unreadable_includ
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAkufg84ACgkQk0asf7iG0tQZmACfQoFhV2VIGtXa72iLICt8ClWn
-rS8AoLY7d1Knj0S94K5bLPzLfIzYwCXx
-=dDkv
+iEYEARECAAYFAkunhacACgkQk0asf7iG0tS6GwCeKnZGjtxNnPAaq+RbJyoxbLH4
++X0An0DLyc2teNr+7W3s6dFKE+a4Gwvd
+=mcs5
 -----END PGP SIGNATURE-----
