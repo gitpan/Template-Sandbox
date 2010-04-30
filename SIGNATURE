@@ -16,15 +16,15 @@ Hash: SHA1
 
 SHA1 9faab88b9b97e93e15ec99a72ffb0cab3190240d Build.PL
 SHA1 e1f70e2245190c805ca259c373eb4c39734eadf6 COPYING
-SHA1 f6adb5884f2ef0fcfe9820242b97d93b97def20f Changes
+SHA1 a48a4e2cab2aa97558487bff3e532d9dbad8d698 Changes
 SHA1 86e2e906550586be2179ed4a501619a6cd99b6e6 MANIFEST
-SHA1 ffca9eb70bc26432e506677243e4f1d09c583af7 META.yml
+SHA1 88b91f28e959dce1d66bf651429981ba091bd430 META.yml
 SHA1 cd9351675c76304eab73b5d3e893fbb879e1e434 Makefile.PL
 SHA1 5b7a1e1e33e1570106f6554ea36c6878bc235562 README
-SHA1 5e3ba1d6bbe8e5c8dc625190aa059a060f527330 lib/Template/Sandbox.pm
-SHA1 d53abc05a5c4568a6a51ceabf0733f0ac205d8a3 lib/Template/Sandbox/Library.pm
-SHA1 c6470ad01b526d54430d35b0c8e4c3d67c175eb1 lib/Template/Sandbox/NumberFunctions.pm
-SHA1 b24749eda0e69589d37767ca64201bb457fc167b lib/Template/Sandbox/StringFunctions.pm
+SHA1 93302ce9a6b6f3200e4a77df4c720ed8a379f5bf lib/Template/Sandbox.pm
+SHA1 4bcb06a1e86dc967cb258a02ec61b671d690eee4 lib/Template/Sandbox/Library.pm
+SHA1 508d0a7c06689b8fdef3647ccdafeb1578a4795b lib/Template/Sandbox/NumberFunctions.pm
+SHA1 361e1d8b62f878a683cb96f1dd752539ae4f26c2 lib/Template/Sandbox/StringFunctions.pm
 SHA1 82d4eabedfe344636dc1023e4070d2f8b3680bca t/00-load.t
 SHA1 f5e793ad737ab7c7b5a59c4a868cc7e453fce3e9 t/05-export.t
 SHA1 d219f7185ad10131e35a6d7b7b0a781890b98e2c t/10-constructor.t
@@ -55,7 +55,7 @@ SHA1 27a5b12852afd1f0564fe534b4bb1503b7f5a1f3 t/80-files.t
 SHA1 0e7b3fdfb461a4f2f30756e69b425e29bc145ce9 t/82-cache.t
 SHA1 d6d98b82252f492d9d967a2686945b581b5e3158 t/85-dump.t
 SHA1 b37275ba9b100ae16b8c022fa4bc5f6704596569 t/86-template-toolkit-compat.t
-SHA1 032b7451e4e6f8bdd0170edc5223f0bd02e44de8 t/88-misc.t
+SHA1 9d1cd01845155d39107cc3ef3bab9646c5d51623 t/88-misc.t
 SHA1 640935336dc1123c0069bcf5432bcaedc2cf22d3 t/90-pod.t
 SHA1 28f4bc4b60453739559694421acdd0aa03b2c9f1 t/99-pod-coverage.t
 SHA1 9a53dfa690ad4251aa5d907fc79ed0059e1eda6e t/test_templates/alternating_recursive_include1.txt
@@ -87,7 +87,7 @@ SHA1 2f92661a5aa5b1bed509a05990dd4a8292852efd t/test_templates/unreadable_includ
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAkunhacACgkQk0asf7iG0tS6GwCeKnZGjtxNnPAaq+RbJyoxbLH4
-+X0An0DLyc2teNr+7W3s6dFKE+a4Gwvd
-=mcs5
+iEYEARECAAYFAkvbN/0ACgkQk0asf7iG0tQF4ACglUKbFjwz0Vu8AVf4ePJCRdVV
+KrkAoMlTCF9W54zScdQmaEpHzZUq0yMf
+=6USM
 -----END PGP SIGNATURE-----
