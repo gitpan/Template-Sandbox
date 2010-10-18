@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.61.
+signed via the Module::Signature module, version 0.64.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -14,17 +14,16 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 9faab88b9b97e93e15ec99a72ffb0cab3190240d Build.PL
+SHA1 2d672d770ceca713db788caed74c16085faa7fb2 Build.PL
 SHA1 e1f70e2245190c805ca259c373eb4c39734eadf6 COPYING
-SHA1 e19078a7c9e5f5166da5f6a3eba62bcd882e7648 Changes
-SHA1 86e2e906550586be2179ed4a501619a6cd99b6e6 MANIFEST
-SHA1 d0408d4d1501505606201f1e284993d01cb06a8b META.yml
-SHA1 cd9351675c76304eab73b5d3e893fbb879e1e434 Makefile.PL
+SHA1 1dae097569ef3495ae733c6073e06a9b2676635d Changes
+SHA1 e28116ae3c71e2926bddb361ed9ae4a97b6d721c MANIFEST
+SHA1 8fedf8cacf274aca0665843ee7014b0ef69b25e8 META.yml
 SHA1 5b7a1e1e33e1570106f6554ea36c6878bc235562 README
-SHA1 b331963a74166bd1dd53fb1443d939b4b436d83d lib/Template/Sandbox.pm
-SHA1 5ee13d4b216c78cb4766bc8a1a645ef92b03b986 lib/Template/Sandbox/Library.pm
-SHA1 cc23911de768b532d8e58bdee09baae5498e1b88 lib/Template/Sandbox/NumberFunctions.pm
-SHA1 3c56057cb43fdfa8daef29c8b52038e89c72a126 lib/Template/Sandbox/StringFunctions.pm
+SHA1 834c889df4ca12571757715dfae695c3759e2039 lib/Template/Sandbox.pm
+SHA1 402a1db8c0eccb3f2c3a9bad7da2da08e41d1db8 lib/Template/Sandbox/Library.pm
+SHA1 8ad79eca37d61c477748439917d769e229c8675e lib/Template/Sandbox/NumberFunctions.pm
+SHA1 4707627bd14ec887d76acc2cb479fe8d7fe32f78 lib/Template/Sandbox/StringFunctions.pm
 SHA1 82d4eabedfe344636dc1023e4070d2f8b3680bca t/00-load.t
 SHA1 f5e793ad737ab7c7b5a59c4a868cc7e453fce3e9 t/05-export.t
 SHA1 d219f7185ad10131e35a6d7b7b0a781890b98e2c t/10-constructor.t
@@ -56,8 +55,14 @@ SHA1 0e7b3fdfb461a4f2f30756e69b425e29bc145ce9 t/82-cache.t
 SHA1 d6d98b82252f492d9d967a2686945b581b5e3158 t/85-dump.t
 SHA1 b37275ba9b100ae16b8c022fa4bc5f6704596569 t/86-template-toolkit-compat.t
 SHA1 9d1cd01845155d39107cc3ef3bab9646c5d51623 t/88-misc.t
-SHA1 640935336dc1123c0069bcf5432bcaedc2cf22d3 t/90-pod.t
-SHA1 28f4bc4b60453739559694421acdd0aa03b2c9f1 t/99-pod-coverage.t
+SHA1 57db22b18a2045d4776a6434e6b106922ef3a319 t/90-check-changes.t
+SHA1 dcf6c7fef5befbc5b8f754de3da707c0fbc22ae9 t/91-fixme.t
+SHA1 98cdccf1120f3c9b445d6bcfaa10339a9c821d54 t/92-hasversion.t
+SHA1 e6efcfd6a7173a136748ef560e913465fe03a854 t/93-meta.t
+SHA1 9f074af0f75805df778e06a6b2c0221aa9ae6a1f t/94-minimumversion.t
+SHA1 bae7f6978d6b9099f6f5b3321598871503e78781 t/95-manifest.t
+SHA1 8c57f2b89f12c54fd975c39ded1c100796ab5f17 t/98-pod.t
+SHA1 49835efe20e87aef3f67d9fdd75a6593acf811d2 t/99-pod-coverage.t
 SHA1 9a53dfa690ad4251aa5d907fc79ed0059e1eda6e t/test_templates/alternating_recursive_include1.txt
 SHA1 96171bd8dde9cce64413c260638b9ddce45771d5 t/test_templates/alternating_recursive_include2.txt
 SHA1 ec76153a510087d1f3c2bbf3e59c70bb1c73dc75 t/test_templates/bad_include_param.txt
@@ -84,10 +89,11 @@ SHA1 f9baa0ee534b0b26c93d5e19e0249b216c067b61 t/test_templates/subdir_include.tx
 SHA1 e385c14a192127b5bb868276906234717619ea47 t/test_templates/template_subdir/template_in_a_subdir.txt
 SHA1 53bbe5e7b27a0f3b481335742271b18eb3b2ad73 t/test_templates/unreadable.txt
 SHA1 2f92661a5aa5b1bed509a05990dd4a8292852efd t/test_templates/unreadable_include.txt
+SHA1 d3d90e29e7912bc7f25e628555e508445c86289b weaver.ini
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAkvpHdsACgkQk0asf7iG0tT1FACfUaZoIoQW8ZYUtmMNlTXl5TC/
-+DkAn1rr9atpu6fo2Uw5ihSo2rHb+NkW
-=nR7Z
+iEYEARECAAYFAky8GesACgkQk0asf7iG0tSGGQCdGQkeNEo/IvfH7HB9RyI5PQmJ
+vmgAoIVAM0FTM4ksYhXsUereHb92jmFW
+=8COC
 -----END PGP SIGNATURE-----

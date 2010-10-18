@@ -32,8 +32,12 @@ my $build = Module::Build->new(
         'Cache::CacheFactory' => 1.08,
         'Cache::Cache'        => 1.00,
         },
+    meta_merge => {
+        'resources' => {
+            'repository' => 'http://github.com/illusori/Perl-Template-Sandbox',
+            },
+        },
     sign => 1,
     dynamic_config => 0,
-    create_makefile_pl => 'passthrough',
     );
 $build->create_build_script;

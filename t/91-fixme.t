@@ -1,11 +1,10 @@
-#!/usr/bin/perl -T
+#!/usr/bin/perl
 
 use strict;
 use warnings;
 
 my @MODULES = (
-	'Test::Pod::Coverage 1.08',
-	'Pod::Coverage::CountParents',
+	'Test::Fixme 0.04',
 );
 
 # Don't run tests during end-user installs
@@ -23,6 +22,10 @@ foreach my $MODULE ( @MODULES ) {
 	}
 }
 
-all_pod_coverage_ok( { coverage_class => 'Pod::Coverage::CountParents' } );
+open my $fh, '<', 'MANIFEST' or
+    plan( skip_all => 'Unable to read MANIFEST file' );
+my @manifest = <$fh>;
+my $manifest_regexp = '(?:' . join( '|', map { chomp; "\Q$_\E" } @manifest ) . ')';
+run_tests( filename_match => qr/^(?:\.\/)?$manifest_regexp$/ );
 
 1;

@@ -1,4 +1,5 @@
 package Template::Sandbox::NumberFunctions;
+# ABSTRACT: Basic number functions library for Template::Sandbox.
 
 use strict;
 use warnings;
@@ -7,7 +8,7 @@ use base 'Template::Sandbox::Library';
 
 use Template::Sandbox qw/:function_sugar/;
 
-$Template::Sandbox::NumberFunctions::VERSION = '1.04';
+$Template::Sandbox::NumberFunctions::VERSION = '1.04_01';
 
 #  From perlfaq5: add thousands-commas to number.
 #  Yes it doesn't respect locale.
@@ -74,6 +75,10 @@ __END__
 =head1 NAME
 
 Template::Sandbox::NumberFunctions - Basic number functions library for Template::Sandbox.
+
+=head1 VERSION
+
+version 1.04_01
 
 =head1 SYNOPSIS
 
@@ -198,7 +203,6 @@ You can find documentation for this module with the perldoc command.
 
     perldoc Template::Sandbox::NumberFunctions
 
-
 You can also look for information at:
 
 =over 4
@@ -221,17 +225,15 @@ L<http://search.cpan.org/dist/Template-Sandbox>
 
 =back
 
-=head1 AUTHORS
+=head1 AUTHOR
 
-Original author: Sam Graham <libtemplate-sandbox-perl BLAHBLAH illusori.co.uk>
+Sam Graham <libtemplate-sandbox-perl BLAHBLAH illusori.co.uk>
 
-Last author:     $Author: illusori $
+=head1 COPYRIGHT AND LICENSE
 
-=head1 COPYRIGHT & LICENSE
+This software is copyright (c) 2005-2010 by Sam Graham <libtemplate-sandbox-perl BLAHBLAH illusori.co.uk>.
 
-Copyright 2005-2010 Sam Graham, all rights reserved.
-
-This library is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
